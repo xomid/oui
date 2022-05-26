@@ -10,6 +10,11 @@ void WindowManager::append(std::wstring title, OUI* container)
 	windows.push_back(pWindow);
 }
 
+UIX* WindowManager::get(size_t id) {
+	if (id < windows.size()) return windows[id];
+	return NULL;
+}
+
 int WindowManager::run()
 {
 	size_t i = 0, sz = windows.size();

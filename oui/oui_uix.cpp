@@ -749,7 +749,7 @@ void UIX::update() {
 		return;
 	}
 
-	bDrawBoxModel = true;
+	//bDrawBoxModel = true;
 	//bInvalidated = true;
 	countbuffer = 0;
 	bool drawMenus = menus.size() > 0;
