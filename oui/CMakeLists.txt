@@ -13,9 +13,7 @@ include_directories(${HARFBUZZ_INCLUDE_DIRS})
 
 set(HARFBUZZ_LIBRARY_RELEASE C:/dev/vcpkg/installed/x64-windows/bin)
 
-add_executable(oui
-	main.cpp
-	oui_container.cpp
+add_library(oui
 	agg_arc.cpp
 	agg_bezier_arc.cpp
 	agg_bspline.cpp
@@ -72,6 +70,6 @@ add_executable(oui
 	#oui_text_search.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} freetype harfbuzz expat::expat)
+target_link_libraries(oui freetype harfbuzz expat::expat)
 
 set_property(TARGET oui PROPERTY CXX_STANDARD 17)
