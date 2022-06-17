@@ -1,6 +1,6 @@
 #include <iostream>
-#include "oui_window_manager.h"
-#include "oui_container.h"
+#include <oui_window_manager.h>
+#include "container.h"
 
 int main(int argc, char* argv[]) 
 {
