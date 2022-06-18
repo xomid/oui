@@ -1,6 +1,6 @@
 #include "oui_group.h"
 
-void UIGroup::process_event(OUI* element, size_t message, uint64_t param, bool bubbleUp) {
+void UIGroup::process_event(OUI* element, uint32_t message, uint64_t param, bool bubbleUp) {
 	UIStack::process_event(element, message, param, bubbleUp);
 
 	if (element && message == Event::Select) {

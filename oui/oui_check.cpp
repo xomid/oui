@@ -5,14 +5,13 @@ UICheck::UICheck() {
 }
 
 void UICheck::set_checked_shape(std::wstring shape) {
-	int i, j;
+	size_t i, j;
 	i = shape.find(L"<svg");
 	j = shape.find(L"</svg>");
 
-	if (i > -1 && j > -1) {
-		
+	if (i != std::string::npos && j != std::string::npos && j > i) {
 		j += 6;
-		auto svg = oui::to_string(shape.substr(i, i - j));
+		auto svg = ocom::to_string(shape.substr(i, j - i));
 		try {
 			m_checked_path = parse_svg(svg);
 		}

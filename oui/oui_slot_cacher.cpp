@@ -19,12 +19,21 @@ Rect TextBox::to_rect() {
 	return Rect(0, 0, ABS(xMax - xMin), ABS(yMax - yMin));
 }
 
+
+FaceHandle::FaceHandle() 
+	: face(0), cache(0), dir(HB_DIRECTION_LTR), gpos(0), ginfo(0), gcount(0U), fontSize(14U) {
+}
+
 size_t FaceHandle::get_max_height() {
 	return cache ? cache->maxHeight : 0;
 }
 
 size_t FaceHandle::get_ch() {
 	return cache ? cache->ch : 0;
+}
+
+SlotCache::SlotCache() 
+	: font(NULL), buffer(NULL), maxHeight(0U), ch(0U) {
 }
 
 SlotCache::~SlotCache() {
@@ -83,7 +92,7 @@ FT_Face SlotCacher::add_font(std::wstring& name, std::wstring path) {
 	if (fonts->count(name)) {
 		return fonts->at(name);
 	}
-	if (FT_New_Face(lib, oui::to_string(path).c_str(), 0, &face)) {
+	if (FT_New_Face(lib, ocom::to_string(path).c_str(), 0, &face)) {
 		return NULL;
 	}
 	force_ucs2_charmap(face);

@@ -3,5 +3,5 @@
 class OUI_API UIGroup : public UIStack
 {
 public:
-	virtual void process_event(OUI* element, size_t message, uint64_t param, bool bubbleUp);
+	void process_event(OUI* element, uint32_t message, uint64_t param, bool bubbleUp) override;
 };

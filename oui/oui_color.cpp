@@ -318,9 +318,9 @@ OUI_API bool is_valid_color(std::string text) {
 	named_color clr;
 	std::string param;
 	size_t c;
-	size_t len = text.length();
-	int i = oui::find(str, len, "#", 1);
-	if (i > -1 && ((i + len) == 9 || (i + len == 7) || (i + len == 4)))
+	auto len = text.length();
+	auto i = ocom::find(str, len, "#", 1);
+	if (i != std::string::npos && ((i + len) == 9 || (i + len == 7) || (i + len == 4)))
 		return true;
 
 	/*if (!compare(str, "transparent", true) ||
@@ -328,33 +328,33 @@ OUI_API bool is_valid_color(std::string text) {
 
 #define bfind2(str, len, q, lenq) (find(str, len, q, lenq) > -1)
 
-	if (oui::begin(str, "rgb(", false)) {
-		param = text.substr(4, text.length() - 5);
-		c = oui::count_char_outside_paranthesis(param, ',');
-		return (param[len - 1] == ')' && oui::is_in_range(double(c), 2, 3, true, true));
+	if (ocom::begin(str, "rgb(", false) && len >= 5) {
+		param = text.substr(4, len - 5);
+		c = ocom::count_char_outside_paranthesis(param, ',');
+		return (param[len - 1] == ')' && ocom::is_in_range(double(c), 2, 3, true, true));
 	}
 
-	if (oui::begin(str, "rgba(", false)) {
+	if (ocom::begin(str, "rgba(", false) && len >= 6) {
 		param = text.substr(5, text.length() - 6);
-		c = oui::count_char_outside_paranthesis(param, ',');
-		return (param[len - 1] == ')' && oui::is_in_range(double(c), 2, 3, true, true));
+		c = ocom::count_char_outside_paranthesis(param, ',');
+		return (param[len - 1] == ')' && ocom::is_in_range(double(c), 2, 3, true, true));
 	}
 
-	if (oui::begin(str, "hsl(", false)) {
+	if (ocom::begin(str, "hsl(", false) && len >= 5) {
 		param = text.substr(4, text.length() - 5);
-		c = oui::count_char_outside_paranthesis(param, ',');
-		return (param[len - 1] == ')' && oui::is_in_range(double(c), 2, 3, true, true));
+		c = ocom::count_char_outside_paranthesis(param, ',');
+		return (param[len - 1] == ')' && ocom::is_in_range(double(c), 2, 3, true, true));
 	}
 
-	if (oui::begin(str, "hsla(", false)) {
+	if (ocom::begin(str, "hsla(", false) && len >= 6) {
 		param = text.substr(5, text.length() - 6);
-		c = oui::count_char_outside_paranthesis(param, ',');
-		return (param[len - 1] == ')' && oui::is_in_range(double(c), 2, 3, true, true));
+		c = ocom::count_char_outside_paranthesis(param, ',');
+		return (param[len - 1] == ')' && ocom::is_in_range(double(c), 2, 3, true, true));
 	}
 
-	if (oui::begin(str, "brightness(", false)) {
+	if (ocom::begin(str, "brightness(", false) && len >= 12) {
 		param = text.substr(11, text.length() - 12);
-		c = oui::count_char_outside_paranthesis(param, ',');
+		c = ocom::count_char_outside_paranthesis(param, ',');
 		return (param[len - 1] == ')' && c == 0);
 	}
 
@@ -414,7 +414,7 @@ void Color::restore() {
 
 std::string Color::to_string(const Color* color) const {
 	if (!color) return "";
-	else if (color->a == 0xff) return oui::to_hex(color->r, color->g, color->b, color->a);
+	else if (color->a == 0xff) return ocom::to_hex(color->r, color->g, color->b, color->a);
 	auto alp = std::to_string(color->a / 255.0);
 	return "rgba(" + std::to_string(color->r) + ", " + std::to_string(color->g) +
 		", " + std::to_string(color->b) + ", " + alp.substr(0, alp.find('.') + 3) + ")";
@@ -449,36 +449,37 @@ inline bool __has_word(std::string& str, std::string word) {
 }
 
 bool Color::parseColor(std::string& str, Color* base) {
-	if (oui::begin(str.c_str(), "brightness", false)) {
+	auto len = str.length();
+
+	if (ocom::begin(str.c_str(), "brightness", false) && len >= 12) {
 		auto loc = str.find(')');
 		double d;
 		if (loc == std::string::npos || !base) return false;
-		str = str.substr(11, loc - 11);
+		str = str.substr(11, loc - 12);
 		d = atof(str.c_str());
 		float b = float(d * 0xff + 0.5);
 		brightness(base, b); // no change in alpha
 		return true;
 	}
 
-	auto sz = str.length();
-	if (sz > 3 && str[0] == '#')
+	if (len > 3 && str[0] == '#')
 	{
 		unsigned c = 0;
 		sscanf_s(str.c_str() + 1, "%x", &c);
-		if (sz == 9) set((c >> 24) & 0xFF, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF);
-		else if (sz == 5) set(doubleHex((c >> 12) & 0xf), doubleHex((c >> 8) & 0xf), doubleHex((c >> 4) & 0xf), doubleHex(c & 0xf));
-		else if (sz == 4) set(doubleHex((c >> 8) & 0xf), doubleHex((c >> 4) & 0xf), doubleHex(c & 0xf));
+		if (len == 9) set((c >> 24) & 0xFF, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF);
+		else if (len == 5) set(doubleHex((c >> 12) & 0xf), doubleHex((c >> 8) & 0xf), doubleHex((c >> 4) & 0xf), doubleHex(c & 0xf));
+		else if (len == 4) set(doubleHex((c >> 8) & 0xf), doubleHex((c >> 4) & 0xf), doubleHex(c & 0xf));
 		else set((c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF, 255);
 		return true;
 	}
 
 	size_t i, j, t;
-	if (oui::begin(str.c_str(), "rgb", false))
+	if (ocom::begin(str.c_str(), "rgb", false) && len >= 5)
 	{
 		i = str.find('(');
 		j = str.find(')');
 
-		if (i > -1 && j > -1) {
+		if (i != std::string::npos && j != std::string::npos) {
 			auto color = str.substr(i + 1, j - i - 1);
 			double a, b, g, r;
 
@@ -525,7 +526,7 @@ bool Color::parseColor(std::string& str, Color* base) {
 		return true;
 	}
 
-	if (oui::begin(str.c_str(), "hsl", false))
+	if (ocom::begin(str.c_str(), "hsl", false) && len >= 5)
 	{
 		size_t j, t;
 		i = str.find('(');
@@ -582,7 +583,6 @@ bool Color::parseColor(std::string& str, Color* base) {
 	}
 
 	named_color c;
-	auto len = str.length();
 	if (len > sizeof(c.name) - 1)
 		return false;
 

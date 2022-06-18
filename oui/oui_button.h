@@ -11,7 +11,7 @@ struct OUI_API UILightButton {
 	double scale;
 
 	agg::svg::path_renderer* icon;
-	UILightButton() : bHover(false), bDown(false)
+	UILightButton() : bHover(false), bDown(false), sw(0), sh(0), aw(0), ah(0), scale(1.0), icon(0)
 	{}
 	void create(Rect rc, agg::svg::path_renderer* back, agg::svg::path_renderer* icon) {
 		this->icon = icon;

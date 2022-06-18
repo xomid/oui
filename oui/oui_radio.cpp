@@ -31,7 +31,7 @@ bool UIRadio::select(bool bSelect) {
 	return res;
 }
 
-void UIRadio::on_click(int x, int y, size_t param) {
+void UIRadio::on_click(int x, int y, uint32_t param) {
 	if (!bEnabled) return;
 	if (parent) parent->process_event(this, Event::Select, 0, true);
 }

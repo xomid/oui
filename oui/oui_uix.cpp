@@ -850,8 +850,8 @@ void UIX::update() {
 		strbuffer[strbuffer.length() - 1] = ']';
 	}
 	strbuffer = std::to_string(countbuffer) + " items, " + (bInvalidated ? "UIX(1)" : "UIX(0)") + strbuffer;
-	sprintf_s(oui::buff, sizeof(oui::buff), "%dms | ", e);
-	strbuffer = std::string(oui::buff) + strbuffer;
+	sprintf_s(ocom::buff, sizeof(ocom::buff), "%dms | ", e);
+	strbuffer = std::string(ocom::buff) + strbuffer;
 	SetWindowTextA(m_hWnd, strbuffer.c_str());
 #endif
 }

@@ -28,6 +28,7 @@ struct OUI_API SlotCache {
 	hb_font_t* font;
 	hb_buffer_t* buffer;
 	size_t maxHeight, ch;
+	SlotCache();
 	~SlotCache();
 	PGlyphSlot get_slot(hb_codepoint_t codep);
 	void insert(hb_codepoint_t codep, PGlyphSlot slot);
@@ -42,6 +43,7 @@ struct OUI_API FaceHandle {
 	TextBox box;
 	uint32_t gcount;
 	size_t fontSize;
+	FaceHandle();
 	size_t get_max_height();
 	size_t get_ch();
 };

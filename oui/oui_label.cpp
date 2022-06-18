@@ -70,7 +70,7 @@ void UILabel::set_text(std::wstring text) {
 
 	if (i != std::wstring::npos && j != std::wstring::npos) {
 		j += 6;
-		auto s = oui::to_string(text.substr(i, i - j));
+		auto s = ocom::to_string(text.substr(i, j - i));
 		try {
 			m_path = parse_svg(s);
 			m_path->bounding_rect(&m_path->left, &m_path->top, &m_path->width, &m_path->height);

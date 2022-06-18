@@ -167,7 +167,7 @@ void OUI::calc_shape() {
 
 		iterateIRev(sz) {
 			BoxShadow& boxs = insetBoxShadows[i];
-			if (oui::is_zeroi(boxs.offsetX) && oui::is_zeroi(boxs.offsetY) && oui::is_zeroi(boxs.blur) && oui::is_zeroi(boxs.spread)) continue;
+			if (ocom::is_zeroi(boxs.offsetX) && ocom::is_zeroi(boxs.offsetY) && ocom::is_zeroi(boxs.blur) && ocom::is_zeroi(boxs.spread)) continue;
 
 			boxs.sheet.create(rc.width + 2 * boxs.blur, rc.height + 2 * boxs.blur, OUI_GRAY);
 			boxs.sheet.clear(0xff);
@@ -200,7 +200,7 @@ void OUI::calc_shape() {
 
 		iterateI(sz) {
 			BoxShadow& boxs = outsetBoxShadows[i];
-			if (oui::is_zeroi(boxs.offsetX) && oui::is_zeroi(boxs.offsetY) && oui::is_zeroi(boxs.blur) && oui::is_zeroi(boxs.spread)) continue;
+			if (ocom::is_zeroi(boxs.offsetX) && ocom::is_zeroi(boxs.offsetY) && ocom::is_zeroi(boxs.blur) && ocom::is_zeroi(boxs.spread)) continue;
 
 			if (bfirst) {
 				l = boxs.offsetX - boxs.spread - boxs.blur;
@@ -234,7 +234,7 @@ void OUI::calc_shape() {
 			BoxShadow& boxs = outsetBoxShadows[i];
 			Rect rc(area);
 
-			if (oui::is_zeroi(boxs.offsetX) && oui::is_zeroi(boxs.offsetY) && oui::is_zeroi(boxs.blur) && oui::is_zeroi(boxs.spread)) continue;
+			if (ocom::is_zeroi(boxs.offsetX) && ocom::is_zeroi(boxs.offsetY) && ocom::is_zeroi(boxs.blur) && ocom::is_zeroi(boxs.spread)) continue;
 
 			rc.left = (boxs.offsetX - boxs.spread - boxs.blur);
 			rc.top = (boxs.offsetY - boxs.spread - boxs.blur);
