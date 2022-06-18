@@ -4,10 +4,13 @@ project (oui)
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-option(BUILD_EXAMPLES "Build the examples" ON)
+include_directories(oui ocom/ocom)
+
+add_subdirectory(ocom)
 
 add_subdirectory(oui)
 
+option(BUILD_EXAMPLES "Build the examples" OFF)
 if(BUILD_EXAMPLES)
 	add_subdirectory (examples)
 endif()

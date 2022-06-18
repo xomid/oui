@@ -54,24 +54,26 @@ add_library(${LIBNAME} ${LIBTYPE}
 	oui_visual_basics.cpp
 	oui_window.cpp
 	oui_window_manager.cpp
-	#oui_check.cpp
+	oui_check.cpp
+	oui_text.cpp
+	oui_text_search.cpp
+	oui_radio.cpp
+	oui_group.cpp
+	oui_link.cpp
 	#oui_console.cpp
 	#oui_dumpster.cpp
 	#oui_filter_table.cpp
 	#oui_flexible_text_list.cpp
 	#oui_grid.cpp
-	oui_group.cpp
 	#oui_link.cpp
 	#oui_m_auto_complete.cpp
 	#oui_option.cpp
-	oui_radio.cpp
 	#oui_row.cpp
 	#oui_select.cpp
 	#oui_table.cpp
-	oui_text.cpp
-	oui_text_search.cpp
+	
 )
 
-target_link_libraries(${LIBNAME} freetype harfbuzz expat::expat)
+target_link_libraries(${LIBNAME} ocom freetype harfbuzz expat::expat)
 
 set_property(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
