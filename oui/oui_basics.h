@@ -2,11 +2,12 @@
 #include <vector>
 #include <string>
 
-#ifdef OUI_EXPORTS
+#ifdef oui_EXPORTS
 #define OUI_API __declspec(dllexport)
 #else
 #define OUI_API// __declspec(dllimport)
 #endif
+#pragma warning(disable:4251)
 
 #define INT_IS_ZERO(v) ((v) == 0)
 #define INT_NOT_ZERO(v) ((v) != 0)
