@@ -1,7 +1,7 @@
 #pragma once
 #include "oui_uix.h"
 
-class WindowManager
+class OUI_API WindowManager
 {
 private:
 	std::vector<UIX*> windows;
