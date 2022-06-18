@@ -7,6 +7,8 @@ OUI_API bool is_valid_color(std::string text);
 inline byte doubleHex(byte value);
 
 struct OUI_API Color {
+private:
+	std::vector<Color> store;
 public:
 	enum class ColorType {
 		color_type_none,
@@ -16,7 +18,6 @@ public:
 	};
 	byte r, g, b, a;
 	ColorType type;
-	std::vector<Color> store;
 	float f, add;
 
 	Color();
