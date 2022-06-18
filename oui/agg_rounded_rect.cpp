@@ -24,7 +24,16 @@
 namespace agg
 {
     //------------------------------------------------------------------------
+    rounded_rect::rounded_rect()
+        : 
+        m_status(0),
+        m_x1(0), m_y1(0), m_x2(0), m_y2(0),
+        m_rx1(0), m_ry1(0), m_rx2(0), m_ry2(0),
+        m_rx3(0), m_ry3(0), m_rx4(0), m_ry4(0)
+    {
+    }
     rounded_rect::rounded_rect(double x1, double y1, double x2, double y2, double r) :
+        m_status(0),
         m_x1(x1), m_y1(y1), m_x2(x2), m_y2(y2),
         m_rx1(r), m_ry1(r), m_rx2(r), m_ry2(r), 
         m_rx3(r), m_ry3(r), m_rx4(r), m_ry4(r)

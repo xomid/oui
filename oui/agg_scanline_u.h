@@ -127,6 +127,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         scanline_u8() :
+            m_y(0),
             m_min_x(0),
             m_last_x(0x7FFFFFF0),
             m_cur_span(0)
@@ -293,7 +294,8 @@ namespace agg
         //--------------------------------------------------------------------
         struct span
         {
-            span() {}
+            span() :
+                x(0), len(0), covers(NULL) {}
             span(coord_type x_, coord_type len_, cover_type* covers_) :
                 x(x_), len(len_), covers(covers_) {}
 
@@ -346,6 +348,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         scanline32_u8() :
+            m_y(0),
             m_min_x(0),
             m_last_x(0x7FFFFFF0),
             m_covers()

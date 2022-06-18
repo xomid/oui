@@ -32,7 +32,7 @@ namespace agg
     class AGG_API rounded_rect
     {
     public:
-        rounded_rect() {}
+        rounded_rect();
         rounded_rect(double x1, double y1, double x2, double y2, double r);
 
         void rect(double x1, double y1, double x2, double y2);

@@ -140,7 +140,7 @@ namespace agg
         double   y;
         double   dist;
 
-        vertex_dist() {}
+        vertex_dist() : x(0.0), y(0.0), dist(0.0) {}
         vertex_dist(double x_, double y_) :
             x(x_),
             y(y_),
@@ -164,7 +164,7 @@ namespace agg
     {
         unsigned cmd;
 
-        vertex_dist_cmd() {}
+        vertex_dist_cmd() : vertex_dist(0, 0), cmd(0) {}
         vertex_dist_cmd(double x_, double y_, unsigned cmd_) :
             vertex_dist(x_, y_),
             cmd(cmd_)
