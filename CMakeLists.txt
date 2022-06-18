@@ -2,8 +2,13 @@
 
 project (oui)
 
-set(CMAKE_TOOLCHAIN_FILE "C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake")
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-add_subdirectory (oui)
+option(BUILD_EXAMPLES "Build the examples" ON)
 
-add_subdirectory (examples)
+add_subdirectory(oui)
+
+if(BUILD_EXAMPLES)
+	add_subdirectory (examples)
+endif()
+

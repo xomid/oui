@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.8)
 
-add_executable(Simple main.cpp container.cpp)
+set(APPNAME "Simple")
 
-target_link_libraries(Simple oui)
+include_directories(${APPNAME} ../oui)
 
-include_directories(Simple ../oui)
+add_executable(${APPNAME} main.cpp container.cpp)
+
+target_link_libraries(${APPNAME} oui)

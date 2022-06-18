@@ -12,8 +12,10 @@ include_directories(${FREETYPE_INCLUDE_DIRS})
 include_directories(${HARFBUZZ_INCLUDE_DIRS})
 
 set(HARFBUZZ_LIBRARY_RELEASE C:/dev/vcpkg/installed/x64-windows/bin)
+set(LIBTYPE SHARED)
+set(LIBNAME oui)
 
-add_library(oui
+add_library(${LIBNAME} ${LIBTYPE} 
 	agg_arc.cpp
 	agg_bezier_arc.cpp
 	agg_bspline.cpp
@@ -70,6 +72,6 @@ add_library(oui
 	#oui_text_search.cpp
 )
 
-target_link_libraries(oui freetype harfbuzz expat::expat)
+target_link_libraries(${LIBNAME} freetype harfbuzz expat::expat)
 
-set_property(TARGET oui PROPERTY CXX_STANDARD 17)
+set_property(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
