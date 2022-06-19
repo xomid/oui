@@ -77,3 +77,14 @@ add_library(${LIBNAME} ${LIBTYPE}
 target_link_libraries(${LIBNAME} ocom freetype harfbuzz expat::expat)
 
 set_property(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
+
+if(WIN32)
+	set(PUBLIC_HEADER_LOCATION ${GLOBAL_OUT_DIR}/include/${PROJECT_NAME})
+	file(GLOB PUBLIC_HEADERS "${CMAKE_SOURCE_DIR}/${PROJECT_NAME}/*.h")
+	add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD 
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${PUBLIC_HEADER_LOCATION})
+	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD 
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		${PUBLIC_HEADERS} ${PUBLIC_HEADER_LOCATION}
+	)
+endif()
