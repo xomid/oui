@@ -1,9 +1,9 @@
 #include "oui_button.h"
 
 UIButton::UIButton() {
-	bDown = bHover = 0;
-	aMin = aMax = 0;
-	stepf = .25;
+	bPressed = bHover = 0;
+	//aMin = aMax = 0;
+	//stepf = .25;
 	bFocusable = false;
 	borderRadius.set(4, 4, 4, 4);
 	enable(true);
@@ -26,9 +26,9 @@ void UIButton::on_update() {
 		color.restore();
 		return;
 	}
-	if (!bDown && !bHover) return UILabel::on_update();
+	if (!bPressed && !bHover) return UILabel::on_update();
 	backgroundColor.save();
-	backgroundColor.set(bDown && bHover ? downBackColor : bHover && !bDown ? hoverBackColor : backgroundColor);
+	backgroundColor.set(bPressed && bHover ? downBackColor : bHover && !bPressed ? hoverBackColor : backgroundColor);
 	UILabel::on_update();
 	backgroundColor.restore();
 }
@@ -44,7 +44,6 @@ void UIButton::on_mouse_move(int x, int y, uint32_t param) {
 	if (!bEnabled) return;
 
 	bHover = handleArea.is_inside(x, y);
-	//change_curr_color();
 	invalidate();
 
 	//if (!bHover && is_withinArea(x, y))
@@ -67,13 +66,13 @@ void UIButton::on_mouse_move(int x, int y, uint32_t param) {
 void UIButton::on_mouse_down(int x, int y, uint32_t param) {
 	UILabel::on_mouse_down(x, y, param);
 
-	bDown = false;
+	bPressed = false;
 
 	if (bHover)
 	{
 		//df = 0;
 		//killAllTimer();
-		bDown = true;
+		bPressed = true;
 		//set_timer(SBTN2D_TIMER_DOWN, SBTN2D_TIMER_INTERVAL, 0);
 	}
 
@@ -98,7 +97,7 @@ bool UIButton::select(bool bSelect) {
 void UIButton::on_mouse_up(int x, int y, uint32_t param) {
 	UILabel::on_mouse_up(x, y, param);
 
-	if (bDown && bEnabled && handleArea.is_inside(x, y))
+	if (bPressed && bEnabled && handleArea.is_inside(x, y))
 	{
 		//df = 1;
 		//killAllTimer();
@@ -108,7 +107,7 @@ void UIButton::on_mouse_up(int x, int y, uint32_t param) {
 		on_click(x, y, param);
 	}
 
-	bDown = 0;
+	bPressed = 0;
 	//change_curr_color();
 	invalidate();
 }
@@ -132,25 +131,25 @@ void UIButton::on_timer(uint32_t nTimer) {
 	//if (nTimer == SBTN2D_TIMER_HOVER)
 	//{
 	//	hf += stepf;
-	//	backgroundColor.mix(&normalBackgroundColor, bDown ? &downBackground : &hoverBackground, min(hf, 1));
-	//	if (bDown)
+	//	backgroundColor.mix(&normalBackgroundColor, bPressed ? &downBackground : &hoverBackground, min(hf, 1));
+	//	if (bPressed)
 	//		int r = 0;
 	//	if (hf >= 1.0 || !bEnabled)
 	//	{
 	//		kill_timer(nTimer);
 	//		hf = 1;
-	//		backgroundColor.mix(&normalBackgroundColor, bDown ? &downBackground : &hoverBackground, hf);
+	//		backgroundColor.mix(&normalBackgroundColor, bPressed ? &downBackground : &hoverBackground, hf);
 	//	}
 	//}
 	//else if (nTimer == SBTN2D_TIMER_LEAVE)
 	//{
 	//	hf -= stepf;
-	//	backgroundColor.mix(&normalBackgroundColor, bDown ? &downBackground : &hoverBackground, max(hf, 0));
+	//	backgroundColor.mix(&normalBackgroundColor, bPressed ? &downBackground : &hoverBackground, max(hf, 0));
 	//	if (hf <= 0 || !bEnabled)
 	//	{
 	//		kill_timer(nTimer);
 	//		hf = 0;// bHover = 0;
-	//		backgroundColor.mix(&normalBackgroundColor, bDown ? &downBackground : &hoverBackground, hf);
+	//		backgroundColor.mix(&normalBackgroundColor, bPressed ? &downBackground : &hoverBackground, hf);
 	//	}
 	//}
 	//else if (nTimer == SBTN2D_TIMER_DOWN)
@@ -196,7 +195,7 @@ bool UIButton::is_withinArea(int x, int y)
 }
 
 void UIButton::on_resize(int width, int height) {
-	OUI::on_resize((int)cx, (int)cy);
+	OUI::on_resize(width, height);
 	handleArea.set(0, 0, area.width, area.height);
 }
 
@@ -207,6 +206,6 @@ void UIButton::set_background_color(Color color) {
 }
 
 //void UIButton::change_curr_color() {
-//	currColor.set(bDown ? downBackground : bHover ? hoverBackground : normalBackgroundColor);
+//	currColor.set(bPressed ? downBackground : bHover ? hoverBackground : normalBackgroundColor);
 //	backgroundColor.set(currColor);
 //}

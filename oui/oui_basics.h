@@ -6,7 +6,7 @@
 #ifdef oui_EXPORTS
 #define OUI_API __declspec(dllexport)
 #else
-#define OUI_API// __declspec(dllimport)
+#define OUI_API __declspec(dllimport)
 #endif
 #pragma warning(disable:4251)
 

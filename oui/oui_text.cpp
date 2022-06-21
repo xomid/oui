@@ -918,11 +918,11 @@ void UINumber::on_mouse_move(int x, int y, uint32_t flags) {
 void UINumber::on_mouse_down(int x, int y, uint32_t flags) {
 	btnIncrease.on_mouse_down(x, y, flags);
 	btnDecrease.on_mouse_down(x, y, flags);
-	if (btnIncrease.bDown) {
+	if (btnIncrease.bPressed) {
 		kill_timer(2);
 		set_timer(1, UINUMBER_CHANGE_TICK_ELAPSE);
 	}
-	else if (btnDecrease.bDown) {
+	else if (btnDecrease.bPressed) {
 		kill_timer(1);
 		set_timer(2, UINUMBER_CHANGE_TICK_ELAPSE);
 	}

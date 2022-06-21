@@ -65,7 +65,6 @@ private:
 public:
 	UINumber();
 
-
 	Float get_number() const;
 	void trigger_update() override;
 	void on_key_down(uint32_t key, uint32_t nrep = 1, uint32_t flags = 0) override;

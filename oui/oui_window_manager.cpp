@@ -1,9 +1,10 @@
 #include "oui_window_manager.h"
 #include <iostream>
 
-void WindowManager::append(std::wstring title, OUI* container)
+void WindowManager::append(std::wstring title, OUI* container, Rect* rc)
 {
 	UIX* pWindow = new UIX();
+	pWindow->create(rc);
 	pWindow->set_container(container);
 	pWindow->set_title(title);
 	pWindow->show_window(true);

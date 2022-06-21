@@ -55,7 +55,7 @@ public:
 
 class Colors {
 public:
-	static OUI_API const Color aliceblue, antiquewhite, aqua, aquamarine, azure, beige, bisque, black, blanchedalmond,
+	OUI_API static const Color aliceblue, antiquewhite, aqua, aquamarine, azure, beige, bisque, black, blanchedalmond,
 		blue, blueviolet, brown, burlywood, cadetblue, chartreuse, chocolate, coral, cornflowerblue, cornsilk, crimson, cyan,
 		darkblue, darkcyan, darkgoldenrod, darkgray, darkgreen, darkgrey, darkkhaki, darkmagenta, darkolivegreen, darkorange,
 		darkorchid, darkred, darksalmon, darkseagreen, darkslateblue, darkslategray, darkslategrey, darkturquoise, darkviolet,

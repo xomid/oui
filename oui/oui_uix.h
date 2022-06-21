@@ -73,6 +73,8 @@ public:
 	BOOL OnEraseBkgnd(HDC pDC);
 	BOOL OnMouseWheel(uint32_t nFlags, short zDelta, int x, int y);
 	BOOL PreTranslateMessage(LPMSG msg);
+	void move(Rect* rc);
+	bool create(Rect* rc);
 
 	HDC displayDC, hdc;
 	HBITMAP bit;
@@ -101,6 +103,7 @@ private:
 	HINSTANCE m_hInstance;
 	HWND m_hWnd;
 	Point cursorPos;
+	DWORD style;
 	const wchar_t* CLASS_NAME = L"UIX";
 };
 

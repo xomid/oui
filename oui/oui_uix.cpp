@@ -120,6 +120,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return res;
 }
 
+void UIX::move(Rect* rc) {
+	if (!rc || !IsWindow(m_hWnd)) return;
+
+	RECT rect;
+	rect.left = rc->left;
+	rect.top = rc->top;
+	rect.right = rect.left + rc->width;
+	rect.bottom = rect.top + rc->height;
+
+	AdjustWindowRect(&rect, style, false);
+
+	MoveWindow(m_hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
+}
+
 UIX::UIX()
 	: m_hInstance(GetModuleHandleW(nullptr))
 {
@@ -153,8 +167,11 @@ UIX::UIX()
 
 	RegisterClassW(&wndClass);
 
-	DWORD style = WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME | WS_SYSMENU;
+	style = WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME | WS_SYSMENU;
 	style &= ~WS_VISIBLE;
+}
+
+bool UIX::create(Rect* rc) {
 
 	int width = 640;
 	int height = 480;
@@ -162,6 +179,14 @@ UIX::UIX()
 	RECT rect;
 	rect.left = 250;
 	rect.top = 250;
+
+	if (rc) {
+		width = rc->width;
+		height = rc->height;
+		rect.left = rc->left;
+		rect.top = rc->top;
+	}
+
 	rect.right = rect.left + width;
 	rect.bottom = rect.top + height;
 
@@ -182,10 +207,14 @@ UIX::UIX()
 		this
 	);
 
+	if (!IsWindow(m_hWnd)) return false;
+
 	displayDC = ::GetDC(m_hWnd);
 	last_time = clock();
 	link_bitmap(width, height, OUI_BGR);
 	resize(width, height);
+
+	return hdc && bit;
 }
 
 UIX::~UIX()
@@ -450,7 +479,7 @@ void UIX::OnMouseMove(uint32_t nFlags, int x, int y)
 		}
 		else if (currMenu) currMenu->on_mouse_move(TORELX(x, currMenu->area), TORELY(y, currMenu->area), nFlags);
 		else if (currWindow) currWindow->on_mouse_move(TORELX(x, currWindow->area), TORELY(y, currWindow->area), nFlags);
-		else container->on_mouse_move(TORELX(x, container->area), TORELY(y, container->area), nFlags);
+		else if(currentElementHovering) currentElementHovering->on_mouse_move(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 	}
 
 	update();
@@ -527,7 +556,7 @@ void UIX::OnLButtonDown(uint32_t nFlags, int x, int y)
 
 			if (currMenu) currMenu->on_mouse_down(TORELX(x, currMenu->area), TORELY(y, currMenu->area), nFlags);
 			else if (currWindow) currWindow->on_mouse_down(TORELX(x, currWindow->area), TORELY(y, currWindow->area), nFlags);
-			else container->on_mouse_down(TORELX(x, container->area), TORELY(y, container->area), nFlags);
+			else if (currentElementHovering) currentElementHovering->on_mouse_down(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 		}
 	}
 
@@ -593,7 +622,7 @@ void UIX::OnLButtonUp(uint32_t nFlags, int x, int y)
 
 			if (currMenu) currMenu->on_mouse_up(TORELX(x, currMenu->area), TORELY(y, currMenu->area), nFlags);
 			else if (currWindow) currWindow->on_mouse_up(TORELX(x, currWindow->area), TORELY(y, currWindow->area), nFlags);
-			else container->on_mouse_up(TORELX(x, container->area), TORELY(y, container->area), nFlags);
+			else if (currentElementHovering) currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 		}
 	}
 
@@ -651,7 +680,7 @@ void UIX::OnLButtonDblClk(uint32_t nFlags, int x, int y)
 
 			if (currMenu) currMenu->on_dbl_click(TORELX(x, currMenu->area), TORELY(y, currMenu->area), nFlags);
 			else if (currWindow) currWindow->on_dbl_click(TORELX(x, currWindow->area), TORELY(y, currWindow->area), nFlags);
-			else container->on_dbl_click(TORELX(x, container->area), TORELY(y, container->area), nFlags);
+			else if (currentElementHovering) currentElementHovering->on_dbl_click(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 		}
 	}
 
@@ -699,7 +728,7 @@ BOOL UIX::OnMouseWheel(uint32_t nFlags, short zDelta, int x, int y)
 
 			if (currMenu) currMenu->on_mouse_wheel(TORELX(x, currMenu->area), TORELY(y, currMenu->area), zDelta, nFlags);
 			else if (currWindow) currWindow->on_mouse_wheel(TORELX(x, currWindow->area), TORELY(y, currWindow->area), zDelta, nFlags);
-			else container->on_mouse_wheel(TORELX(x, container->area), TORELY(y, container->area), zDelta, nFlags);
+			else if (currentElementHovering) currentElementHovering->on_mouse_wheel(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), zDelta, nFlags);
 		}
 	}
 	update();
@@ -917,17 +946,17 @@ void UIX::link_bitmap(int iw, int ih, int nBits)
 	bit = CreateDIBSection(hdc, &i, DIB_RGB_COLORS, (void**)&sheet.data, 0, 0);
 
 	SelectObject(hdc, bit);
-	nBytes = ::GetObject(bit, sizeof(DIBSECTION), &dibsection);
+	nBytes = ::GetObjectA(bit, sizeof(DIBSECTION), &dibsection);
 	if (iw >= dibsection.dsBm.bmWidth || ih > dibsection.dsBm.bmHeight)
-		throw;
+		throw; 
 
 	sheet.w = sheet.sw = iw;
 	sheet.h = sheet.sh = ih;
 	sheet.pitch = dibsection.dsBm.bmWidthBytes;
 	sheet.nbpp = sheet.pitch / sheet.w;
 
-	sheet.pitexcess = sheet.pitch - sheet.sw * sheet.nbpp;
-}
+	sheet.pitexcess = sheet.pitch - sheet.sw * sheet.nbpp; 
+} 
 
 void UIX::lock_screen(int lockerID) {
 	if (this->lockerID > -2 || lockerID < -2) return;

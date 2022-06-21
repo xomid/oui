@@ -6,7 +6,7 @@ class OUI_API WindowManager
 private:
 	std::vector<UIX*> windows;
 public:
-	void append(std::wstring title, OUI* container);
+	void append(std::wstring title, OUI* container, Rect* rc = NULL);
 	UIX* get(size_t id);
 	int run();
 };

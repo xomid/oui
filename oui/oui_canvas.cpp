@@ -1,7 +1,7 @@
 #include "oui_canvas.h"
 
-Canvas::Canvas(Rect* area, Sheet* replacementSheet) : Canvas() {
-	set(area, replacementSheet);
+Canvas::Canvas(Rect* area, Sheet* sheet) : Canvas() {
+	set(area, sheet);
 }
 
 Canvas::~Canvas() {
@@ -2507,8 +2507,8 @@ void Canvas::bit_blt(Sheet& srcSheet, int dstx, int dsty, int width, int height,
 			int dy, dx, count;
 			byte cla, clp, * d, * s;
 
-			for (y = sy, dy = sy + dsty; y < ey; ++y, ++dy) {
-				dx = sx + dstx;
+			for (y = sy, dy = sy; y < ey; ++y, ++dy) {
+				dx = sx;
 				sheet->clip(dx, dy, &count, &cla);
 				if (INT_IS_ZERO(cla)) {
 					src += slenx + sremp;

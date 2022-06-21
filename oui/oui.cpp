@@ -298,13 +298,6 @@ void OUI::calc_shape() {
 void OUI::on_mouse_down(int x, int y, uint32_t param) {
 	x = TOABSX(x);
 	y = TOABSY(y);
-	iterateV(elements) {
-		auto elem = *it;
-		if (elem->area.is_inside(x, y) && elem->bVisible) {
-			elem->on_mouse_down(TORELX(x, elem->area), TORELY(y, elem->area), param);
-			return;
-		}
-	}
 
 	if (bScrollable) {
 		if (scrollX->area.is_inside(x, y) && scrollX->bVisible) {
@@ -328,13 +321,6 @@ void OUI::on_mouse_down(int x, int y, uint32_t param) {
 void OUI::on_dbl_click(int x, int y, uint32_t param) {
 	x = TOABSX(x);
 	y = TOABSY(y);
-	iterateV(elements) {
-		auto elem = *it;
-		if (elem->area.is_inside(x, y) && elem->bVisible) {
-			elem->on_dbl_click(TORELX(x, elem->area), TORELY(y, elem->area), param);
-			return;
-		}
-	}
 
 	if (bScrollable) {
 		if (scrollX->area.is_inside(x, y) && scrollX->bVisible) {
@@ -353,16 +339,8 @@ void OUI::on_dbl_click(int x, int y, uint32_t param) {
 void OUI::on_mouse_up(int x, int y, uint32_t param) {
 	if (get_capture() == this)
 		release_capture();
-
 	x = TOABSX(x);
 	y = TOABSY(y);
-	iterateV(elements) {
-		auto elem = *it;
-		if (elem->area.is_inside(x, y) && elem->bVisible) {
-			elem->on_mouse_up(TORELX(x, elem->area), TORELY(y, elem->area), param);
-			return;
-		}
-	}
 
 	if (bScrollable) {
 		if (scrollX->area.is_inside(x, y) && scrollX->bVisible) {
@@ -383,13 +361,6 @@ void OUI::on_mouse_up(int x, int y, uint32_t param) {
 void OUI::on_mouse_move(int x, int y, uint32_t param) {
 	x = TOABSX(x);
 	y = TOABSY(y);
-	iterateV(elements) {
-		auto elem = *it;
-		if (elem->area.is_inside(x, y) && elem->bVisible) {
-			elem->on_mouse_move(TORELX(x, elem->area), TORELY(y, elem->area), param);
-			break;
-		}
-	}
 
 	if (bScrollable) {
 		if (scrollX->area.is_inside(x, y) && scrollX->bVisible)
@@ -405,14 +376,6 @@ bool OUI::on_mouse_wheel(int x, int y, int zDelta, uint32_t param) {
 	x = TOABSX(x);
 	y = TOABSY(y);
 
-	iterateV(elements) {
-		auto elem = *it;
-		if (elem->area.is_inside(x, y) && elem->bVisible) {
-			auto res = elem->on_mouse_wheel(TORELX(x, elem->area), TORELY(y, elem->area), zDelta, param);
-			if (res) return true;
-		}
-	}
-
 	if (bScrollable) {
 		if (scrollX->bVisible && y > scrollX->area.top - 50)
 			return scrollX->on_mouse_wheel(TORELX(x, scrollX->area), TORELY(y, scrollX->area), zDelta, param);
@@ -423,7 +386,7 @@ bool OUI::on_mouse_wheel(int x, int y, int zDelta, uint32_t param) {
 		}
 	}
 
-	return false;
+	return true;
 }
 
 void OUI::on_update_frame() {
@@ -647,7 +610,7 @@ void OUI::move(int left, int top, int width, int height) {
 		//return;
 	if (boxModel.width == width && boxModel.height == height)
 		return move(left, top);
-	
+
 	boxModel.left = left;
 	boxModel.top = top;
 	boxModel.width = width;

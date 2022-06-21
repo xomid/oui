@@ -3,7 +3,7 @@
 
 struct OUI_API UILightButton {
 	Rect rc;
-	bool bHover, bDown;
+	bool bHover, bPressed;
 	Color color, hoverColor, downColor;
 	std::map<std::string, Color> colors;
 	agg::trans_affine mat;
@@ -11,13 +11,13 @@ struct OUI_API UILightButton {
 	double scale;
 
 	agg::svg::path_renderer* icon;
-	UILightButton() : bHover(false), bDown(false), sw(0), sh(0), aw(0), ah(0), scale(1.0), icon(0)
+	UILightButton() : bHover(false), bPressed(false), sw(0), sh(0), aw(0), ah(0), scale(1.0), icon(0)
 	{}
 	void create(Rect rc, agg::svg::path_renderer* back, agg::svg::path_renderer* icon) {
 		this->icon = icon;
 		this->icon->m_colors = &colors;
 		this->rc.set(rc);
-		bHover = bDown = false;
+		bHover = bPressed = false;
 		aw = rc.width;
 		ah = rc.height;
 		double x0, y0, x1, y1;
@@ -55,22 +55,22 @@ struct OUI_API UILightButton {
 		return *this;
 	}
 	bool on_mouse_down(int x, int y, size_t flags) {
-		bDown = bHover;
+		bPressed = bHover;
 		adj_colors();
-		return bDown;
+		return bPressed;
 	}
 	bool on_mouse_up(int x, int y, size_t flags) {
-		auto temp = bDown && bHover;
-		bDown = false;
+		auto temp = bPressed && bHover;
+		bPressed = false;
 		adj_colors();
 		return temp;
 	}
 	void on_dbl_click(int x, int y, size_t flags) {
-		bDown = false;
+		bPressed = false;
 		adj_colors();
 	}
 	void adj_colors() {
-		if (bDown && bHover) colors["currentColor"] = downColor;
+		if (bPressed && bHover) colors["currentColor"] = downColor;
 		else if (bHover) colors["currentColor"] = hoverColor;
 		else colors["currentColor"] = color;
 	}
@@ -98,9 +98,9 @@ enum class OUI_API ButtonType {
 class OUI_API UIButton : public UILabel
 {
 public:
-	bool bDown;
-	int aMax, aMin;
-	float hf, df, stepf, cx, cy;
+	//int aMax, aMin;
+	//float hf, df, stepf, cx, cy;
+	bool bPressed;
 	Rect handleArea;
 	Color downBackColor, hoverBackColor;
 

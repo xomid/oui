@@ -3,10 +3,13 @@
 
 class OUI_API UICheck : public UIRadio
 {
+private:
+	PSVGShape checkShape;
+	ShapeStorage roundedRect;
+	Color checkColor;
 public:
 	UICheck();
-	agg::svg::path_renderer* m_checked_path;
-
-	void set_checked_shape(std::wstring text);
-	agg::svg::path_renderer* get_path() override;
+	void invalidate_shape() override;
+	void on_click(int x, int y, uint32_t param) override;
+	void gen_check_shape(Sheet& sheet, Color back, Color border, Color normalBorder, Color checkColor);
 };

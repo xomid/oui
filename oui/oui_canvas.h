@@ -19,13 +19,13 @@ public:
 	FaceHandle faceHandle;
 
 	Canvas();
-	Canvas(Rect* area, Sheet* replacementSheet);
+	Canvas(Rect* area, Sheet* sheet);
 	~Canvas();
 
 	Sheet* set_sheet(Sheet* newSheet);
 	Rect* set_area(Rect* newArea);
 
-	void set(Rect* newArea, Sheet* replacementSheet);
+	void set(Rect* newArea, Sheet* sheet);
 	void clear(Rect* rect, const Color* color);
 	void clear_opaque(Rect* rect, Color& color);
 	void clear(Rect& rect, Border& bor, Color& background, byte opacity);
