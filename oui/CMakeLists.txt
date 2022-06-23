@@ -56,6 +56,8 @@ add_library(${LIBNAME} ${LIBTYPE}
 	oui_window_manager.cpp
 	oui_check.cpp
 	oui_text.cpp
+	oui_number.cpp
+	oui_editable_label.cpp
 	oui_text_search.cpp
 	oui_radio.cpp
 	oui_group.cpp
