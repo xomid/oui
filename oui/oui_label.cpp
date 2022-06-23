@@ -41,7 +41,14 @@ OUI_API agg::svg::path_renderer* parse_svg(std::string svg) {
 	return UILabel::cachedPath->at(svg);
 }
 
-UILabel::UILabel(): OUI() {
+OUI_API double calc_scale(int width, int height, PSVGShape svgShape) {
+	if (!svgShape) return 0;
+	double res = fmin(double(width) / fabs(svgShape->width), double(height) / fabs(svgShape->height));
+	if (svgShape->width <= 0 || svgShape->height <= 0) res = 0;
+	return res;
+}
+
+UILabel::UILabel() : OUI() {
 	UILabel::cachedPath = new std::map<std::string, agg::svg::path_renderer*>();
 
 	ltr = true;
@@ -99,13 +106,13 @@ void UILabel::on_update() {
 	get_content_area(rc);
 	auto* path = get_path();
 	double ds = 0;
-	
+
 	int l = rc.left, t = rc.top;
 
 	auto box = canvas.get_box16((wchar_t*)text.c_str(), text.length());
 
 	if (path) {
-		
+
 		ds = fmin(float(rc.width - 1.0 - path->pl - path->pr) / fabs(path->width),
 			float(rc.height - 1.0 - path->pt - path->pb) / fabs(path->height));
 
@@ -117,7 +124,7 @@ void UILabel::on_update() {
 				path->width * ds - path->pl - path->pr) / 2);
 		if (canvas.art.alignX == Align::RIGHT)
 			l += int(rc.width - box->get_width() -
-			path->width * ds - path->pl - path->pr);
+				path->width * ds - path->pl - path->pr);
 	}
 	else {
 		if (canvas.art.alignX == Align::CENTER)
@@ -125,7 +132,7 @@ void UILabel::on_update() {
 		if (canvas.art.alignX == Align::RIGHT)
 			l += rc.width - box->get_width();
 	}
-	
+
 	if (canvas.art.alignY == Align::CENTER) {
 		int textH = (int)canvas.get_max_height();
 		t += (rc.height - textH) / 2;

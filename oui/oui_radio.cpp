@@ -132,6 +132,7 @@ void UIRadio::on_update() {
 bool UIRadio::select(bool bSelect) {
 	bool res = OUI::select(bSelect);
 	invalidate_shape();
+	process_event(this, Event::PostSelect, 0, true);
 	return res;
 }
 

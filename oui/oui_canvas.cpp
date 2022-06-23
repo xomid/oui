@@ -2021,7 +2021,7 @@ void Canvas::render_svg(agg::svg::path_renderer* path, int left, int top, int wi
 	path->render(ras, sl, ren, mtx, rb.clip_box(), opacity);
 }
 
-void Canvas::render_svg(agg::svg::path_renderer* path, int centerX, int centerY, double scale, byte opacity, agg::trans_affine* overlayMatrix)
+void Canvas::render_svg_origin(agg::svg::path_renderer* path, int centerX, int centerY, double scale, byte opacity, agg::trans_affine* overlayMatrix)
 {
 	if (IS_NULL(path)) return;
 	pixfmt_bgr pf(sheet, area);

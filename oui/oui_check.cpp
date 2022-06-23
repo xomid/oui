@@ -254,3 +254,9 @@ void UICheck::on_click(int x, int y, uint32_t param) {
 	if (!bEnabled) return;
 	if (parent) parent->process_event(this, bSelected ? Event::Deselect : Event::Select, 0, true);
 }
+
+bool UICheck::select(bool bSelect) {
+	bool res = OUI::select(bSelect);
+	invalidate_shape();
+	return res;
+}

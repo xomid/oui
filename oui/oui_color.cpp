@@ -8,154 +8,6 @@ struct named_color
 	byte r, g, b, a;
 };
 
-OUI_API const Color Colors::aliceblue = Color(240, 248, 255, 255);
-OUI_API const Color Colors::antiquewhite = Color(250, 235, 215, 255);
-OUI_API const Color Colors::aqua = Color(0, 255, 255, 255);
-OUI_API const Color Colors::aquamarine = Color(127, 255, 212, 255);
-OUI_API const Color Colors::azure = Color(240, 255, 255, 255);
-OUI_API const Color Colors::beige = Color(245, 245, 220, 255);
-OUI_API const Color Colors::bisque = Color(255, 228, 196, 255);
-OUI_API const Color Colors::black = Color(0, 0, 0, 255);
-OUI_API const Color Colors::blanchedalmond = Color(255, 235, 205, 255);
-OUI_API const Color Colors::blue = Color(0, 0, 255, 255);
-OUI_API const Color Colors::blueviolet = Color(138, 43, 226, 255);
-OUI_API const Color Colors::brown = Color(165, 42, 42, 255);
-OUI_API const Color Colors::burlywood = Color(222, 184, 135, 255);
-OUI_API const Color Colors::cadetblue = Color(95, 158, 160, 255);
-OUI_API const Color Colors::chartreuse = Color(127, 255, 0, 255);
-OUI_API const Color Colors::chocolate = Color(210, 105, 30, 255);
-OUI_API const Color Colors::coral = Color(255, 127, 80, 255);
-OUI_API const Color Colors::cornflowerblue = Color(100, 149, 237, 255);
-OUI_API const Color Colors::cornsilk = Color(255, 248, 220, 255);
-OUI_API const Color Colors::crimson = Color(220, 20, 60, 255);
-OUI_API const Color Colors::cyan = Color(0, 255, 255, 255);
-OUI_API const Color Colors::darkblue = Color(0, 0, 139, 255);
-OUI_API const Color Colors::darkcyan = Color(0, 139, 139, 255);
-OUI_API const Color Colors::darkgoldenrod = Color(184, 134, 11, 255);
-OUI_API const Color Colors::darkgray = Color(169, 169, 169, 255);
-OUI_API const Color Colors::darkgreen = Color(0, 100, 0, 255);
-OUI_API const Color Colors::darkgrey = Color(169, 169, 169, 255);
-OUI_API const Color Colors::darkkhaki = Color(189, 183, 107, 255);
-OUI_API const Color Colors::darkmagenta = Color(139, 0, 139, 255);
-OUI_API const Color Colors::darkolivegreen = Color(85, 107, 47, 255);
-OUI_API const Color Colors::darkorange = Color(255, 140, 0, 255);
-OUI_API const Color Colors::darkorchid = Color(153, 50, 204, 255);
-OUI_API const Color Colors::darkred = Color(139, 0, 0, 255);
-OUI_API const Color Colors::darksalmon = Color(233, 150, 122, 255);
-OUI_API const Color Colors::darkseagreen = Color(143, 188, 143, 255);
-OUI_API const Color Colors::darkslateblue = Color(72, 61, 139, 255);
-OUI_API const Color Colors::darkslategray = Color(47, 79, 79, 255);
-OUI_API const Color Colors::darkslategrey = Color(47, 79, 79, 255);
-OUI_API const Color Colors::darkturquoise = Color(0, 206, 209, 255);
-OUI_API const Color Colors::darkviolet = Color(148, 0, 211, 255);
-OUI_API const Color Colors::deeppink = Color(255, 20, 147, 255);
-OUI_API const Color Colors::deepskyblue = Color(0, 191, 255, 255);
-OUI_API const Color Colors::dimgray = Color(105, 105, 105, 255);
-OUI_API const Color Colors::dimgrey = Color(105, 105, 105, 255);
-OUI_API const Color Colors::dodgerblue = Color(30, 144, 255, 255);
-OUI_API const Color Colors::firebrick = Color(178, 34, 34, 255);
-OUI_API const Color Colors::floralwhite = Color(255, 250, 240, 255);
-OUI_API const Color Colors::forestgreen = Color(34, 139, 34, 255);
-OUI_API const Color Colors::fuchsia = Color(255, 0, 255, 255);
-OUI_API const Color Colors::gainsboro = Color(220, 220, 220, 255);
-OUI_API const Color Colors::ghostwhite = Color(248, 248, 255, 255);
-OUI_API const Color Colors::gold = Color(255, 215, 0, 255);
-OUI_API const Color Colors::goldenrod = Color(218, 165, 32, 255);
-OUI_API const Color Colors::gray = Color(128, 128, 128, 255);
-OUI_API const Color Colors::green = Color(0, 128, 0, 255);
-OUI_API const Color Colors::greenyellow = Color(173, 255, 47, 255);
-OUI_API const Color Colors::grey = Color(128, 128, 128, 255);
-OUI_API const Color Colors::honeydew = Color(240, 255, 240, 255);
-OUI_API const Color Colors::hotpink = Color(255, 105, 180, 255);
-OUI_API const Color Colors::indianred = Color(205, 92, 92, 255);
-OUI_API const Color Colors::indigo = Color(75, 0, 130, 255);
-OUI_API const Color Colors::ivory = Color(255, 255, 240, 255);
-OUI_API const Color Colors::khaki = Color(240, 230, 140, 255);
-OUI_API const Color Colors::lavender = Color(230, 230, 250, 255);
-OUI_API const Color Colors::lavenderblush = Color(255, 240, 245, 255);
-OUI_API const Color Colors::lawngreen = Color(124, 252, 0, 255);
-OUI_API const Color Colors::lemonchiffon = Color(255, 250, 205, 255);
-OUI_API const Color Colors::lightblue = Color(173, 216, 230, 255);
-OUI_API const Color Colors::lightcoral = Color(240, 128, 128, 255);
-OUI_API const Color Colors::lightcyan = Color(224, 255, 255, 255);
-OUI_API const Color Colors::lightgoldenrodyellow = Color(250, 250, 210, 255);
-OUI_API const Color Colors::lightgray = Color(211, 211, 211, 255);
-OUI_API const Color Colors::lightgreen = Color(144, 238, 144, 255);
-OUI_API const Color Colors::lightgrey = Color(211, 211, 211, 255);
-OUI_API const Color Colors::lightpink = Color(255, 182, 193, 255);
-OUI_API const Color Colors::lightsalmon = Color(255, 160, 122, 255);
-OUI_API const Color Colors::lightseagreen = Color(32, 178, 170, 255);
-OUI_API const Color Colors::lightskyblue = Color(135, 206, 250, 255);
-OUI_API const Color Colors::lightslategray = Color(119, 136, 153, 255);
-OUI_API const Color Colors::lightslategrey = Color(119, 136, 153, 255);
-OUI_API const Color Colors::lightsteelblue = Color(176, 196, 222, 255);
-OUI_API const Color Colors::lightyellow = Color(255, 255, 224, 255);
-OUI_API const Color Colors::lime = Color(0, 255, 0, 255);
-OUI_API const Color Colors::limegreen = Color(50, 205, 50, 255);
-OUI_API const Color Colors::linen = Color(250, 240, 230, 255);
-OUI_API const Color Colors::magenta = Color(255, 0, 255, 255);
-OUI_API const Color Colors::maroon = Color(128, 0, 0, 255);
-OUI_API const Color Colors::mediumaquamarine = Color(102, 205, 170, 255);
-OUI_API const Color Colors::mediumblue = Color(0, 0, 205, 255);
-OUI_API const Color Colors::mediumorchid = Color(186, 85, 211, 255);
-OUI_API const Color Colors::mediumpurple = Color(147, 112, 219, 255);
-OUI_API const Color Colors::mediumseagreen = Color(60, 179, 113, 255);
-OUI_API const Color Colors::mediumslateblue = Color(123, 104, 238, 255);
-OUI_API const Color Colors::mediumspringgreen = Color(0, 250, 154, 255);
-OUI_API const Color Colors::mediumturquoise = Color(72, 209, 204, 255);
-OUI_API const Color Colors::mediumvioletred = Color(199, 21, 133, 255);
-OUI_API const Color Colors::midnightblue = Color(25, 25, 112, 255);
-OUI_API const Color Colors::mintcream = Color(245, 255, 250, 255);
-OUI_API const Color Colors::mistyrose = Color(255, 228, 225, 255);
-OUI_API const Color Colors::moccasin = Color(255, 228, 181, 255);
-OUI_API const Color Colors::navajowhite = Color(255, 222, 173, 255);
-OUI_API const Color Colors::navy = Color(0, 0, 128, 255);
-OUI_API const Color Colors::oldlace = Color(253, 245, 230, 255);
-OUI_API const Color Colors::olive = Color(128, 128, 0, 255);
-OUI_API const Color Colors::olivedrab = Color(107, 142, 35, 255);
-OUI_API const Color Colors::orange = Color(255, 165, 0, 255);
-OUI_API const Color Colors::orangered = Color(255, 69, 0, 255);
-OUI_API const Color Colors::orchid = Color(218, 112, 214, 255);
-OUI_API const Color Colors::palegoldenrod = Color(238, 232, 170, 255);
-OUI_API const Color Colors::palegreen = Color(152, 251, 152, 255);
-OUI_API const Color Colors::paleturquoise = Color(175, 238, 238, 255);
-OUI_API const Color Colors::palevioletred = Color(219, 112, 147, 255);
-OUI_API const Color Colors::papayawhip = Color(255, 239, 213, 255);
-OUI_API const Color Colors::peachpuff = Color(255, 218, 185, 255);
-OUI_API const Color Colors::peru = Color(205, 133, 63, 255);
-OUI_API const Color Colors::pink = Color(255, 192, 203, 255);
-OUI_API const Color Colors::plum = Color(221, 160, 221, 255);
-OUI_API const Color Colors::powderblue = Color(176, 224, 230, 255);
-OUI_API const Color Colors::purple = Color(128, 0, 128, 255);
-OUI_API const Color Colors::red = Color(255, 0, 0, 255);
-OUI_API const Color Colors::rosybrown = Color(188, 143, 143, 255);
-OUI_API const Color Colors::royalblue = Color(65, 105, 225, 255);
-OUI_API const Color Colors::saddlebrown = Color(139, 69, 19, 255);
-OUI_API const Color Colors::salmon = Color(250, 128, 114, 255);
-OUI_API const Color Colors::sandybrown = Color(244, 164, 96, 255);
-OUI_API const Color Colors::seagreen = Color(46, 139, 87, 255);
-OUI_API const Color Colors::seashell = Color(255, 245, 238, 255);
-OUI_API const Color Colors::sienna = Color(160, 82, 45, 255);
-OUI_API const Color Colors::silver = Color(192, 192, 192, 255);
-OUI_API const Color Colors::skyblue = Color(135, 206, 235, 255);
-OUI_API const Color Colors::slateblue = Color(106, 90, 205, 255);
-OUI_API const Color Colors::slategray = Color(112, 128, 144, 255);
-OUI_API const Color Colors::slategrey = Color(112, 128, 144, 255);
-OUI_API const Color Colors::snow = Color(255, 250, 250, 255);
-OUI_API const Color Colors::springgreen = Color(0, 255, 127, 255);
-OUI_API const Color Colors::steelblue = Color(70, 130, 180, 255);
-OUI_API const Color Colors::tan = Color(210, 180, 140, 255);
-OUI_API const Color Colors::teal = Color(0, 128, 128, 255);
-OUI_API const Color Colors::thistle = Color(216, 191, 216, 255);
-OUI_API const Color Colors::tomato = Color(255, 99, 71, 255);
-OUI_API const Color Colors::turquoise = Color(64, 224, 208, 255);
-OUI_API const Color Colors::violet = Color(238, 130, 238, 255);
-OUI_API const Color Colors::wheat = Color(245, 222, 179, 255);
-OUI_API const Color Colors::white = Color(255, 255, 255, 255);
-OUI_API const Color Colors::whitesmoke = Color(245, 245, 245, 255);
-OUI_API const Color Colors::yellow = Color(255, 255, 0, 255);
-OUI_API const Color Colors::yellowgreen = Color(154, 205, 50, 255);
-
 static named_color colors[] = {
 	{ "aliceblue",240,248,255, 255 },
 	{ "antiquewhite",250,235,215, 255 },
@@ -382,6 +234,9 @@ Color::Color() {
 	f = add = 0.0f;
 	clear();
 }
+Color::Color(const SimpleColor& color) {
+	set(color.r, color.g, color.b, color.a);
+}
 Color::Color(const Color& color) : Color() {
 	set(color.r, color.g, color.b, color.a);
 }
@@ -391,7 +246,13 @@ Color::Color(const Color& color, byte opacity) : Color() {
 Color::Color(const char* color, Color* base) : Color() {
 	set(std::string(color), base);
 }
+Color::Color(const wchar_t* color, Color* base) : Color() {
+	set(std::wstring(color), base);
+}
 Color::Color(std::string color, Color* base) : Color() {
+	set(color, base);
+}
+Color::Color(std::wstring color, Color* base) : Color() {
 	set(color, base);
 }
 Color::Color(byte red, byte green, byte blue, byte alpha) : Color() {
@@ -632,9 +493,20 @@ bool Color::set(std::string color, Color* base) {
 	return parseColor(color, base);
 }
 
+bool Color::set(std::wstring color, Color* base) {
+	auto scolor = ocom::to_string(color);
+	return parseColor(scolor, base);
+}
+
 bool Color::set(const char* color, Color* base) {
 	auto str = std::string(color);
 	return parseColor(str, base);
+}
+
+bool Color::set(const wchar_t* color, Color* base) {
+	auto wstr = std::wstring(color);
+	auto scolor = ocom::to_string(wstr);
+	return parseColor(scolor, base);
 }
 
 void Color::set(const Color& src) {

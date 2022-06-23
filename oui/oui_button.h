@@ -27,6 +27,7 @@ struct OUI_API UILightButton {
 		sh = ABS(int(y1 - y0));
 		scale = 1;
 		mat.reset();
+		adj_colors();
 	}
 	double get_aratio() const {
 

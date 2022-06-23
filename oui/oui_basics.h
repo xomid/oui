@@ -2,13 +2,7 @@
 #include <vector>
 #include <string>
 #include <ocom.h>
-
-#ifdef oui_EXPORTS
-#define OUI_API __declspec(dllexport)
-#else
-#define OUI_API __declspec(dllimport)
-#endif
-#pragma warning(disable:4251)
+#include "oui_config.h"
 
 #define INT_IS_ZERO(v) ((v) == 0)
 #define INT_NOT_ZERO(v) ((v) != 0)

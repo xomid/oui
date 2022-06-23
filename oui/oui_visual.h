@@ -76,7 +76,8 @@ public:
 	static constexpr size_t Scroll = 6;
 	static constexpr size_t Click = 7;
 	static constexpr size_t Destroy = 8;
-	static constexpr size_t _last = Click + 1;
+	static constexpr size_t PostSelect = 9;
+	static constexpr size_t _last = PostSelect + 1;
 };
 
 class OUI_API DialogButtonId {

@@ -22,6 +22,10 @@ public:
 	virtual agg::svg::path_renderer* get_path();
 };
 
+// util
+
 OUI_API std::string optimizeSVG(std::string svg);
 
 OUI_API agg::svg::path_renderer* parse_svg(std::string svg);
+
+OUI_API double calc_scale(int width, int height, PSVGShape svgShape);

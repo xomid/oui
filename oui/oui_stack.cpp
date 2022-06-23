@@ -60,6 +60,7 @@ void UIStack::measure_content(int* w, int* h) {
 	OUI::get_content_area(rc);
 
 	if (mode == UIStackMode::STACKHOR) {
+		int prevRight = 0;
 		iterateV(elements) {
 			auto elem = *it;
 			if (!elem->bVisible)
@@ -75,15 +76,16 @@ void UIStack::measure_content(int* w, int* h) {
 				t = 0;
 			}
 
-			l += cw + elem->margin.left +
-				elem->margin.right;
+			l += cw + Max(elem->margin.left, prevRight);
 			t = Max(t + top, ch + top);
 			mxw = Max(l, mxw);
+			prevRight = elem->margin.right;
 		}
 
 		l = mxw;
 	}
 	else {
+		int prevButtom = 0;
 		iterateV(elements) {
 			auto elem = *it;
 			if (!elem->bVisible)
@@ -91,9 +93,9 @@ void UIStack::measure_content(int* w, int* h) {
 			cw = ch = 0;
 			elem->measure_size(&cw, &ch);
 			if (bStretch) cw = rc.width;
-			t += ch + elem->margin.top +
-				elem->margin.bottom;
+			t += ch + Max(elem->margin.top, prevButtom);
 			l = Max(l, cw);
+			prevButtom = elem->margin.bottom;
 		}
 	}
 
@@ -135,6 +137,7 @@ void UIStack::on_resize(int width, int height) {
 
 	if (mode == UIStackMode::STACKHOR) {
 		t = top;
+		int prevRight = 0;
 
 		for (i = 0; i < sz; ++i) {
 			elem = elements[i];
@@ -149,12 +152,14 @@ void UIStack::on_resize(int width, int height) {
 			}
 
 			if (elem->floatType == UIFloatType::Left) {
-				l += elem->margin.left;
+				l += Max(elem->margin.left, prevRight);
 				elem->move(l, t + margin.top, w, h);
-				l += w + elem->margin.right;
+				l += w;
+				prevRight = elem->margin.right;
 			}
 		}
 
+		int prevLeft = 0;
 		for (i = (int)elements.size() - 1; i > -1; --i) {
 			elem = elements[i];
 			if (!elem->bVisible)
@@ -164,9 +169,10 @@ void UIStack::on_resize(int width, int height) {
 			elem->measure_size(&w, &h);
 
 			if (elem->floatType == UIFloatType::Right) {
-				r -= elem->margin.right;
+				r -= Max(elem->margin.right, prevLeft);
 				elem->move(r - w, t, w, h);
-				r -= w + elem->margin.left;
+				r -= w;
+				prevLeft = elem->margin.left;
 			}
 		}
 
@@ -188,6 +194,8 @@ void UIStack::on_resize(int width, int height) {
 	else if (mode == UIStackMode::STACKVER) {
 		if (bStretch) cw = rc.width;
 
+		int prevBottom = 0;
+		int prevTop = 0;
 		iterateV(elements) {
 			auto elem = *it;
 			if (!elem->bVisible)
@@ -198,14 +206,16 @@ void UIStack::on_resize(int width, int height) {
 			if (bStretch) w = cw;
 
 			if (elem->floatType == UIFloatType::Bottom) {
-				b -= elem->margin.bottom;
-				elem->move(r - w, t, w, h);
-				b -= w + elem->margin.bottom;
+				b -= Max(elem->margin.bottom, prevTop);
+				elem->move(l, b - h, w, h);
+				b -= w;
+				prevTop = elem->margin.top;
 			}
 			else {
-				t += elem->margin.top;
+				t += Max(elem->margin.top, prevBottom);
 				elem->move(l, t, w, h);
-				t += h + elem->margin.bottom;
+				t += h;
+				prevBottom = elem->margin.bottom;
 			}
 		}
 	}

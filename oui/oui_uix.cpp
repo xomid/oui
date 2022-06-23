@@ -491,13 +491,13 @@ void UIX::OnLButtonDown(uint32_t nFlags, int x, int y)
 	bool locked = is_locked();
 
 	if (!locked) {
-
 		for (auto it = menus.begin(), end = menus.end(); it != end; ) {
 			UIMenu* menu = (UIMenu*)it->second;
 			if (!menu->area.is_inside(x, y) && !menu->parent->area.is_inside(x, y)) {
 				menu->show_window(false);
 				it = menus.erase(it);
-				if (menu->parent) menu->parent->process_event(menu, Event::Deselect, 0, true);
+				if (menu->parent) 
+					menu->parent->process_event(menu, Event::Deselect, 0, true);
 				invalidate();
 				continue;
 			}
@@ -805,7 +805,7 @@ void UIX::update() {
 		}
 	}
 	if (drawMenus) {
-		/*for (auto it : menus) {
+		for (auto it : menus) {
 			auto menu = it.second;
 			if (SHEET_OVERLAP(menu->area, sheet)) {
 				if (menu && menu->bVisible) {
@@ -813,7 +813,7 @@ void UIX::update() {
 					menu->on_update_frame();
 				}
 			}
-		}*/
+		}
 	}
 
 	if (container->bInvalidated) {

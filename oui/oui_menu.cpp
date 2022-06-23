@@ -11,7 +11,7 @@ UIMenu::UIMenu() : UIStack() {
 }
 
 OUI* UIMenu::create(int left, int top, int width, int height, OUI* parent, bool bAddToParent) {
-	OUI::create(left, top, width, height, parent->uix->get_container(), bAddToParent);
+	OUI::create(left, top, width, height, parent, false);
 	show_window(false);
 	return this;
 }

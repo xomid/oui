@@ -1,11 +1,9 @@
 #ifndef AGG_CONFIG_INCLUDED
 #define AGG_CONFIG_INCLUDED
 
-#ifdef AGG_EXPORTS
-#define AGG_API __declspec(dllexport)
-#else
-#define AGG_API //__declspec(dllimport)
-#endif
+
+#include "oui_config.h"
+#define AGG_API OUI_API
 
 // This file can be used to redefine certain data types.
 

@@ -45,7 +45,7 @@ public:
 	void render(Color color, byte opacity = 0xff);
 	void render(rasterizer_scanline& ras, scanline& sl, Color color, byte opacity = 0xff);
 	void render_svg(agg::svg::path_renderer* path, int left, int top, int width, int height, byte opacity, Spacing* extraPadding = NULL, agg::trans_affine* overlayMatrix = NULL);
-	void render_svg(agg::svg::path_renderer* path, int centerX, int centerY, double scale, byte opacity, agg::trans_affine* overlayMatrix = NULL);
+	void render_svg_origin(agg::svg::path_renderer* path, int centerX, int centerY, double scale, byte opacity, agg::trans_affine* overlayMatrix = NULL);
 
 	template<class VertexSource>
 	void add_path(VertexSource& vs, unsigned path_id = 0) {
@@ -53,7 +53,6 @@ public:
 	}
 
 	// TEXT Related stuff
-	
 	TextBox* get_box8(char* text, size_t len);
 	TextBox* get_box16(wchar_t* text, size_t len);
 
