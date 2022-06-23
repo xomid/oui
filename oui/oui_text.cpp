@@ -2,8 +2,6 @@
 #include "oui_uix.h"
 #include <precise_float.h>
 
-#pragma region UIText
-
 bool is_key_on(uint32_t key) {
 	return ::GetKeyState(key) & 0x8000;
 }
@@ -60,35 +58,18 @@ Point UIText::get_cursor_pos(bool absolute) {
 
 void UIText::focus() {
 	UILabel::focus();
-	//border.set_color(Color("#2962ff"));
-
-	//auto& s = outsetBoxShadows[0];
-	//s.offsetY = 2;
-	//s.blur = 7;
-	//s.spread = 2;
-	//s.color.set("#0002");
-	//calc_shape();
 	set_index(currIndex);
 	blink = true;
 	set_timer(0, blinkerSpeed);
-	process_event(this, Event::Focus, 0, true);
+	//process_event(this, Event::Focus, 0, true);
 }
 
 void UIText::blur() {
 	UILabel::blur();
-	//border.set_color(Color("#6a6d78"));
-
-	/*auto& s = outsetBoxShadows[0];
-	s.offsetY = 1;
-	s.blur = 3;
-	s.spread = 0;
-	s.color.set("#0001");
-	calc_shape();*/
-
 	reset_selection();
 	blink = false;
 	kill_timer(0);
-	process_event(this, Event::Blur, 0, true);
+	//process_event(this, Event::Blur, 0, true);
 }
 
 void UIText::on_timer(uint32_t nTimer) {
@@ -128,7 +109,7 @@ void UIText::on_dbl_click(int x, int y, uint32_t flags) {
 	UILabel::get_content_area(rc);
 	int iconWidth = rc.height;
 	bCloseIconDown = (x >= rc.width + rc.left - iconWidth);
-	bool bIconIconDown = x < iconWidth;
+	bool bIconIconDown = m_path ? x < iconWidth : x < padding.left;
 	if (!bCloseIconDown && !bIconIconDown) {
 		selectionBeginIndex = 0;
 		set_index((int)text.length());
@@ -376,7 +357,7 @@ void UIText::on_key_down(uint32_t key, uint32_t nrep, uint32_t flags) {
 				set_index(mn);
 			}
 			reset_selection();
-			process_event(this, Event::Update, 0, true);
+			trigger_update();
 		}
 		break;
 
@@ -403,7 +384,7 @@ void UIText::on_key_down(uint32_t key, uint32_t nrep, uint32_t flags) {
 							set_index(mn);
 						}
 						reset_selection();
-						process_event(this, Event::Update, 0, true);
+						trigger_update();
 					}
 				}
 				break;
@@ -423,7 +404,7 @@ void UIText::on_key_down(uint32_t key, uint32_t nrep, uint32_t flags) {
 							text.insert(currIndex, v);
 							set_index(currIndex + (int)v.length());
 							reset_selection();
-							process_event(this, Event::Update, 0, true);
+							trigger_update();
 						}
 					}
 				}
@@ -445,7 +426,7 @@ void UIText::on_key_down(uint32_t key, uint32_t nrep, uint32_t flags) {
 				text.insert(currIndex, 1, ch);
 				set_index(currIndex + 1);
 				reset_selection();
-				process_event(this, Event::Update, 0, true);
+				trigger_update();
 			}
 		}
 	}
@@ -479,7 +460,7 @@ void UIText::on_update() {
 
 	int ix, iy, dy, posx, posy, count,
 		i, glyphw, glyphh, glyphPitch, cursorLineHeight,
-		cursorY, cursorLineWidth, penLeft, penTop;
+		cursorX, cursorY, cursorLineWidth, penLeft, penTop;
 	Rect rect;
 	Art& art = canvas.art;
 	wchar_t* text = (wchar_t*)this->text.c_str();
@@ -552,7 +533,7 @@ void UIText::on_update() {
 
 	posx = shiftX;
 	posy = 0;
-	cursorLineHeight = rect.height - 4;
+	cursorLineHeight = rect.height - padding.top;
 	cursorY = (rect.height - cursorLineHeight) / 2;
 	canvas.art.strokeColor.set(OUITheme::text);
 
@@ -589,6 +570,7 @@ void UIText::on_update() {
 		ey = sheet->h - 1;
 		penTop += rc.top;
 		penLeft += rc.left;
+		cursorX = rect.left + posx;
 
 		for (i = 0; i < gcount; i++) {
 			auto* slot = SlotCacher::load_glyph(ginfo[i].codepoint, faceHandle);
@@ -597,9 +579,8 @@ void UIText::on_update() {
 			iy = posy + __SL(gpos[i].y_offset + slot->metrics.horiBearingY);
 			posx += __SL(gpos[i].x_advance);
 			posy += __SL(gpos[i].y_advance);
-			if (i == currIndex && blink) {
-				canvas.draw_vertical_line(rect.left + ix, rect.top + cursorY, rect.top + cursorY + cursorLineHeight, cursorLineWidth);
-			}
+			if (i == currIndex && blink)
+				cursorX = rect.left + ix;
 
 			if ((posx + penLeft) < sx || (ix + penLeft) > ex) continue;
 
@@ -659,8 +640,10 @@ void UIText::on_update() {
 			}
 		}
 
-		if (i == currIndex && blink) {
-			canvas.draw_vertical_line(rect.left + posx, rect.top + cursorY, rect.top + cursorY + cursorLineHeight, cursorLineWidth);
+		if (blink) {
+			if (i == currIndex)
+				cursorX = rect.left + posx;
+			canvas.draw_vertical_line(cursorX, cursorY, rect.top + cursorY + cursorLineHeight, cursorLineWidth);
 		}
 	}
 	canvas.sheet->unclip();
@@ -671,8 +654,7 @@ void UIText::on_update() {
 
 	if (m_path) {
 		l = rc.left = padding.top;
-		double ds = fmin(double(rc.width - 1) / fabs(m_path->width), double(rc.height - 1) / fabs(m_path->height));
-		if (m_path->width <= 0 || m_path->height <= 0) ds = 0;
+		auto ds = calc_scale(rc.width, rc.height, m_path);
 
 		int tt = rc.top;
 		if (canvas.art.alignY == Align::CENTER)
@@ -685,8 +667,8 @@ void UIText::on_update() {
 		canvas.render_svg(m_path, l, tt, rc.width, rc.height, opacity, &pad);
 	}
 	if (showClearIcon && len && bHover) {
-		double ds = fmin(double(rc.width - 1) / fabs(closeIcon->width), double(rc.height - 1) / fabs(closeIcon->height));
-		if (closeIcon->width <= 0 || closeIcon->height <= 0) ds = 0;
+		int closeHeight = Min(rc.height, fontSize);
+		auto ds = calc_scale(rc.width, closeHeight, closeIcon);
 
 		l = int(area.width - padding.right - 1 - closeIcon->pl - closeIcon->pr - closeIcon->width * ds);
 		int tt = rc.top;
@@ -695,13 +677,15 @@ void UIText::on_update() {
 		if (canvas.art.alignY == Align::BOTTOM)
 			tt += int(rc.height - closeIcon->height * ds - closeIcon->pt - closeIcon->pb);
 
-		pad.set(6);
+		pad.set(Max(1, 1));
 		closeIcon->m_colors = &colors;
-		canvas.render_svg(closeIcon, l, tt, rc.width, rc.height, opacity, &pad);
+		canvas.render_svg(closeIcon, l, tt, rc.width, closeHeight, opacity, &pad);
 	}
 }
 
 void UIText::on_resize(int width, int height) {
+	padding.set(4, 4, 4, 8);
+	padding.bottom = padding.top = CLAMP3(1, int(height * .2), 4);
 	set_index(currIndex);
 }
 
@@ -762,295 +746,3 @@ void UIText::trigger_update() {
 	if (parent) parent->process_event(this, Event::Update, 0, true);
 }
 
-#pragma endregion
-
-// UINumber
-
-#include <regex>
-
-UINumber::UINumber() : UIText(), number("0", "1", "na", "na") {
-	num_to_text();
-	set_place_holder_text(L"");
-	showClearIcon = false;
-	btnIncrease.create(
-		Rect(0, 0, 20, 20),
-		0,
-		parse_svg(R"(<svg viewBox="0 0 11 7"><path fill="none" stroke="currentColor" stroke-width="1.3" d="m.5 5.5 5-4 5 4"/></svg>)"));
-	btnDecrease.create(
-		Rect(0, 0, 20, 20),
-		0,
-		parse_svg(R"(<svg viewBox="0 0 11 7" width="11" height="7" fill="none"><path stroke="currentColor" stroke-width="1.3" d="m.5 1.5 5 4 5-4"/></svg>)"));
-
-	btnIncrease.set_colors(Colors::lightgray, Colors::white, Colors::darkgray);
-	btnDecrease.set_colors(Colors::lightgray, Colors::white, Colors::darkgray);
-}
-
-bool UINumber::pre_append(wchar_t c) {
-	if (::iswdigit(c) != 0) return true;
-	if (c != L'.' && c != L'+' && c != L'-') return false;
-
-	for (auto ch : text) {
-		if (ch == c) return false;
-	}
-
-	return true;
-}
-
-bool UINumber::pre_append(std::wstring str) {
-	return std::regex_match(str, std::wregex(L"[(-|+)|][0-9]+"));
-}
-
-void UINumber::blur() {
-	if (text.length() == 0)
-		set_text(L"0");
-	text_to_num();
-	trigger_update();
-	UIText::blur();
-}
-
-void UINumber::on_update() {
-	UIText::on_update();
-	btnIncrease.draw(canvas);
-	btnDecrease.draw(canvas);
-}
-
-void UINumber::on_resize(int width, int height) {
-	UIText::on_resize(width, height);
-	Rect rc; UILabel::get_content_area(rc);
-	auto sh = (contentArea.height / 2) * .7;
-	int sw = int(sh * btnIncrease.get_aratio());
-	int l = area.width;
-	int mid = (rc.height) / 2;
-	btnIncrease.rc.set(l - sw, (int)round((mid - sh) / 2.0) + rc.top, sw, (int)sh);
-	btnDecrease.rc.set(l - sw, (int)round((mid - sh) / 2.0) + mid + rc.top, sw, (int)sh);
-}
-
-void UINumber::on_key_down(uint32_t key, uint32_t nrep, uint32_t flags) {
-	UIText::on_key_down(key, nrep, flags);
-	if (!bActive || is_key_on(VK_CONTROL)) return;
-	switch (key) {
-	case VK_UP:
-		increase();
-		break;
-	case VK_DOWN:
-		decrease();
-		break;
-	case VK_RETURN:
-		text_to_num();
-		trigger_update();
-		invalidate();
-		break;
-	default:
-		auto str = ocom::to_string(text);
-		if (is_number(str) && number.is_in_range(str)) {
-			text_to_num();
-			trigger_update();
-			invalidate();
-		}
-		break;
-	}
-}
-
-void UINumber::trigger_update() {
-	if (parent) parent->process_event(this, Event::Update, 0, true);
-}
-
-Float UINumber::get_number() const {
-	return number.get_number();
-}
-
-void UINumber::increase() {
-	++number;
-	num_to_text();
-	trigger_update();
-	invalidate();
-}
-
-void UINumber::decrease() {
-	--number;
-	num_to_text();
-	trigger_update();
-	invalidate();
-}
-
-void UINumber::on_timer(uint32_t nTimer) {
-	UIText::on_timer(nTimer);
-	if (nTimer != 1 && nTimer != 2) return;
-
-	if ((clock() - lastChange) < waitingElapse)
-		return;
-	lastChange = clock();
-	waitingElapse = Max(1U, (clock_t)(waitingElapse * UINUMBER_CHANGE_ACCELERATION));
-
-	if (nTimer == 1) {
-		increase();
-	}
-	else if (nTimer == 2) {
-		decrease();
-	}
-}
-
-void UINumber::config(std::string number, std::string tick, std::string minPrice, std::string maxPrice) {
-	this->number.set(number, tick, minPrice, maxPrice);
-	num_to_text();
-}
-
-void UINumber::text_to_num() {
-	auto str = ocom::to_string(text);
-	if (!is_number(str)) str = "0";
-	number.set(str);
-	str = number.str();
-	set_text(ocom::to_wstring(str));
-}
-
-void UINumber::num_to_text() {
-	auto str = number.str();
-	set_text(ocom::to_wstring(str));
-}
-
-void UINumber::on_mouse_move(int x, int y, uint32_t flags) {
-	if (!btnIncrease.on_mouse_move(x, y, flags).bHover)
-		if (!btnDecrease.on_mouse_move(x, y, flags).bHover)
-			UIText::on_mouse_move(x, y, flags);
-	invalidate();
-}
-
-void UINumber::on_mouse_down(int x, int y, uint32_t flags) {
-	btnIncrease.on_mouse_down(x, y, flags);
-	btnDecrease.on_mouse_down(x, y, flags);
-	if (btnIncrease.bPressed) {
-		kill_timer(2);
-		set_timer(1, UINUMBER_CHANGE_TICK_ELAPSE);
-	}
-	else if (btnDecrease.bPressed) {
-		kill_timer(1);
-		set_timer(2, UINUMBER_CHANGE_TICK_ELAPSE);
-	}
-	waitingElapse = UINUMBER_CHANGE_ELAPSE;
-	lastChange = clock();
-	lastDown = clock();
-	UIText::on_mouse_down(x, y, flags);
-	if (!bActive) focus();
-	invalidate();
-}
-
-void UINumber::on_mouse_up(int x, int y, uint32_t flags) {
-	kill_timer(1);
-	kill_timer(2);
-	if (waitingElapse == UINUMBER_CHANGE_ELAPSE) {
-		if (btnIncrease.on_mouse_up(x, y, flags)) {
-			increase();
-		}
-		else if (btnDecrease.on_mouse_up(x, y, flags)) {
-			decrease();
-		}
-		else {
-			UIText::on_mouse_up(x, y, flags);
-		}
-	}
-	else {
-		UIText::on_mouse_up(x, y, flags);
-	}
-	invalidate();
-}
-
-void UINumber::on_dbl_click(int x, int y, uint32_t flags) {
-	UIText::on_dbl_click(x, y, flags);
-	btnIncrease.on_mouse_down(x, y, flags);
-	btnDecrease.on_mouse_down(x, y, flags);
-	invalidate();
-}
-
-void UINumber::on_mouse_enter(OUI* prev) {
-	UIText::on_mouse_enter(prev);
-}
-
-void UINumber::on_mouse_leave(OUI* next) {
-	UIText::on_mouse_leave(next);
-	btnIncrease.bHover = false;
-	btnDecrease.bHover = false;
-	btnIncrease.adj_colors();
-	btnDecrease.adj_colors();
-	invalidate();
-}
-
-// UIEditableLabel 
-
-UIEditableLabel::UIEditableLabel() : UIText() {
-	bEditable = false;
-}
-
-void UIEditableLabel::set(bool editable) {
-	//if (editable) uix->add_focusable(this);
-	//else uix->remove_focusable(this);
-	bEditable = editable;
-}
-
-void UIEditableLabel::on_init() {
-	UIText::on_init();
-	canvas.art.alignX = defaultAlignX;
-}
-
-void UIEditableLabel::blur() {
-	set(false);
-	UIText::blur();
-}
-
-void UIEditableLabel::focus() {
-	if (bEditable) UIText::focus();
-}
-
-void UIEditableLabel::on_dbl_click(int x, int y, uint32_t flags) {
-	set(true);
-	UIText::focus();
-	UIText::on_dbl_click(x, y, flags);
-}
-
-void UIEditableLabel::on_mouse_down(int x, int y, uint32_t flags) {
-	if (bEditable)
-		UIText::on_mouse_down(x, y, flags);
-	else
-		UILabel::on_mouse_down(x, y, flags);
-}
-
-void UIEditableLabel::on_update() {
-	if (bEditable) {
-		UIText::on_update();
-	}
-	else {
-		canvas.art.alignX = Align::LEFT;
-		UILabel::on_update();
-	}
-}
-
-bool UIEditableLabel::is_editable() {
-	return bEditable;
-}
-
-OUI* UIEditableLabel::get_draggable(int x, int y, uint32_t flags) {
-	if (!parent || bEditable) return 0;
-	x = TORELX(TOABSX(x), parent->area);
-	y = TORELY(TOABSY(y), parent->area);
-	return parent->get_draggable(x, y, flags);
-}
-
-bool UIEditableLabel::pre_append(wchar_t c) {
-	return bEditable;
-}
-
-bool UIEditableLabel::pre_append(std::wstring str) {
-	return bEditable;
-}
-
-bool UIEditableLabel::focusable() {
-	return bFocusable && is_editable();
-}
-
-void UIEditableLabel::on_key_down(uint32_t key, uint32_t nrep, uint32_t flags) {
-	UIText::on_key_down(key, nrep, flags);
-	switch (key) {
-	case VK_RETURN:
-		uix->focus_next();
-		break;
-	}
-}
