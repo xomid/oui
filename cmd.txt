@@ -1,1 +1,0 @@
-cmake -DCMAKE_TOOLCHAIN_FILE="C:\dev\vcpkg\scripts\buildsystems\vcpkg.cmake" -S . -B build -DCMAKE_PREFIX_PATH="C:\dev\vcpkg\installed\x64-windows\share" -DZLIB_INCLUDE_DIR="C:/dev/vcpkg/installed/x64-windows/share/zlib" -DZLIB_LIBRARY="C:/dev/vcpkg/installed/x64-windows/share/zlib"
