@@ -23,7 +23,9 @@ public:
 	bool btnCloseHover, btnCloseDown, btnMaxHover, btnMaxDown, btnMinHover, btnMinDown;
 	int icw, ich;
 	WindowType type;
+	Color btnCloseColor, crHover, crDown;
 
+	void apply_theme(bool bInvalidate) override;
 	void show_window(bool show = true) override;
 	virtual void close(uint32_t);
 	OUI* get_draggable(int x, int y, uint32_t flags) override;

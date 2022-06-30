@@ -297,26 +297,36 @@ bool ShapeStorage::is_rounded_rect() {
 
 
 
-Sheet::Sheet() {
-	data = NULL;
-	pitexcess = 0;
+Sheet::Sheet()
+	: data(0), w(0), sw(0), h(0), sh(0), pitch(0), nbpp(0), pitexcess(0), bAttached(false) {
 	offset.reset(0, 0);
 }
 
+Sheet::~Sheet() {
+	free();
+}
+
 void Sheet::free() {
-	if (data) ::free(data);
+	if (data && !bAttached) ::free(data);
 	data = NULL;
+	bAttached = false;
 	pitch = nbpp = w = h = sw = sh = pitexcess = 0;
 }
 
+void Sheet::attach(pyte data, int width, int height, int pitch, int nbpp) {
+	if (!data || width < 1 || height < 1 || pitch == 0 || nbpp < 1 || nbpp > 4)
+		return;
+	bAttached = true;
+	this->data = data;
+	this->pitch = pitch;
+	this->nbpp = nbpp;
+	w = sw = width;
+	h = sh = height;
+	pitexcess = pitch - sw * nbpp;
+}
+
 void Sheet::destroy() {
-	if (data) {
-		delete data;
-		data = NULL;
-	}
-	w = h = sw = sh = nbpp = pitch = 0;
-	data = NULL;
-	pitexcess = 0;
+	free();
 }
 
 void Sheet::setclip(ShapeStorage* shape, byte opacity, bool reverse) {
@@ -352,8 +362,8 @@ void Sheet::unclip() {
 	curr = clipArea.size() > 0 ? clipArea.back() : NULL;
 }
 
-void Sheet::create(int width, int height, int NBPP /*  Number of bytes per pixel */) {
-	if (width < 1 || height < 1) return;
+int Sheet::create(int width, int height, int NBPP /*  Number of bytes per pixel */) {
+	if (width < 1 || height < 1 || NBPP < 1) return 1;
 	free();
 
 	sw = w = width;
@@ -362,11 +372,48 @@ void Sheet::create(int width, int height, int NBPP /*  Number of bytes per pixel
 	temp = 4 - nbpp;
 	pitch = w * nbpp + temp;
 	pitexcess = 0;
-	data = (pyte)malloc(h * pitch);
-	//memset(data, 0, h * pitch);
+	data = (pyte)calloc(h * pitch, 1);
 	curr = NULL;
 	clipArea.clear();
+
+	return data && w == width && height == h && nbpp == NBPP ? 0 : 2;
 }
+
+int Sheet::clone(const Sheet* source) {
+	if (!source || source->is_useless())
+		return 1;
+
+	sw = w = source->w;
+	sh = h = source->h;
+	nbpp = source->nbpp;
+	temp = source->temp;
+	pitch = source->pitch;
+	pitexcess = source->pitexcess;
+	data = (pyte)calloc(h * pitch, 1);
+	curr = source->curr;
+	clipArea = source->clipArea;
+
+	if (!data) return 2;
+
+	memcpy(data, source->data, h * pitch);
+	return 0;
+}
+
+int Sheet::copy(const Sheet* source) {
+	if (!source || source->is_useless() || source == this)
+		return 1;
+
+	curr = source->curr;
+	clipArea = source->clipArea;
+
+	if (w == source->w && h == source->h && nbpp == source->nbpp
+		&& pitch == source->pitch && source->data && data)
+		memcpy(data, source->data, h * pitch);
+	else 1;
+
+	return 0;
+}
+
 
 void Sheet::clear_solid(Color& color) {
 	if (!data || !w || !h || !nbpp) return;
@@ -416,7 +463,7 @@ void Sheet::clear(byte red, byte green, byte blue) {
 	}
 }
 
-bool Sheet::getPixel(int x, int y, byte* r, byte* g, byte* b) {
+bool Sheet::getPixel(int x, int y, byte* r, byte* g, byte* b) const {
 	if (x > -1 && x < w && y > -1 && y < h) {
 		if (nbpp == OUI_GRAY) {
 			byte v = data[y * pitch + x];
@@ -437,7 +484,7 @@ bool Sheet::getPixel(int x, int y, byte* r, byte* g, byte* b) {
 	return false;
 }
 
-bool Sheet::getPixel(int x, int y, byte* res) {
+bool Sheet::getPixel(int x, int y, byte* res) const {
 	if (x > -1 && x < w && y > -1 && y < h) {
 		if (nbpp == OUI_GRAY) {
 			*res = data[y * pitch + x];

@@ -107,11 +107,10 @@ public:
 
 	UIButton();
 
-	bool is_withinArea(int x, int y);
-	void killAllTimer();
+	virtual void enable(bool bEnable = true);
 
-	void enable(bool enable);
-	OUI* create(int left, int top, int width, int height, OUI* parent, bool bAddToParent = true) override;
+	void apply_theme(bool bInvalidate = true) override;
+	bool is_withinArea(int x, int y);
 	void on_update() override;
 	void on_mouse_enter(OUI* prev) override;
 	void on_mouse_leave(OUI* next) override;
@@ -119,7 +118,6 @@ public:
 	void on_mouse_down(int x, int y, uint32_t param) override;
 	void on_mouse_up(int x, int y, uint32_t param) override;
 	void on_timer(uint32_t nTimer) override;
-	void show_window(bool bShow = true) override;
 	void on_resize(int width, int height) override;
 	void on_dbl_click(int x, int y, uint32_t param) override;
 	void on_click(int x, int y, uint32_t param) override;

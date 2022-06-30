@@ -4,6 +4,7 @@
 #include "oui_window.h"
 #include "oui_variable.h"
 #include "oui_timer.h"
+#include "oui_magnifier.h"
 #include <unordered_map>
 #include <map>
 
@@ -60,6 +61,7 @@ public:
 	bool is_key_on(uint32_t key);
 	void show_window(bool show);
 
+	void PreLButtonDown(int x, int y, uint32_t param);
 	void OnIdle();
 	void OnTimer(uint32_t nEventID);
 	void OnPaint();
@@ -75,6 +77,15 @@ public:
 	BOOL PreTranslateMessage(LPMSG msg);
 	void move(Rect* rc);
 	bool create(Rect* rc);
+	void set_magnifier_scale(double scale);
+	void show_magnifier(bool show, int width, int height, double scale);
+	void show_box_model(bool show = true);
+	void apply_theme_all();
+	void show_window(UIWindow* window, bool show = true);
+	HWND get_hwnd();
+
+private:
+	void apply_theme_all(OUI* element);
 
 	HDC displayDC, hdc;
 	HBITMAP bit;
@@ -89,19 +100,18 @@ public:
 	std::vector<OUI*> elements, focusables, toDelete;
 	OUI* container, * currentElementHovering, * capturedElement, * lastDragHoverElement;
 	UIWindow* activeWindow;
-	bool bInvalidated, bDrawBoxModel, bAsyncTimer, terminate, terminated;
+	bool bInvalidated, bDrawBoxModel, bDrawMagnifier, bAsyncTimer, terminate, terminated;
 	int id, lockerID, focusedElementID, visibleWindows;
 	clock_t last_time;
-	Drag<int> dragMan;
+	Drag<int, int> dragMan;
 	int countbuffer;
 	std::string strbuffer;
 	int dragZIndex;
 	clock_t lastLButtonDownTime;
 	int lXPos, lYPos;
-
-private:
+	UIMagnifier magnifier;
 	HINSTANCE m_hInstance;
-	HWND m_hWnd;
+	HWND hWnd;
 	Point cursorPos;
 	DWORD style;
 	const wchar_t* CLASS_NAME = L"UIX";

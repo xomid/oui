@@ -22,13 +22,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_PAINT:
 	{
-		PAINTSTRUCT ps;
-		auto prevHDC = uix->hdc;
-		HDC hdc = BeginPaint(hwnd, &ps);
-		uix->hdc = hdc;
 		uix->OnPaint();
-		EndPaint(hwnd, &ps);
-		uix->hdc = prevHDC;
 	}
 	return 0;
 
@@ -83,17 +77,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		case WM_LBUTTONDOWN:
 		{
-			auto prev = uix->lastLButtonDownTime;
-			uix->lastLButtonDownTime = clock();
-			auto delta = uix->lastLButtonDownTime - prev;
-			if (prev && delta <= (long)GetDoubleClickTime() && xPos == uix->lXPos && yPos == uix->lYPos) {
-				uix->OnLButtonDblClk((uint32_t)wParam, xPos, yPos);
-			}
-			else {
-				uix->lXPos = xPos;
-				uix->lYPos = yPos;
-				uix->OnLButtonDown((uint32_t)wParam, xPos, yPos);
-			}
+			uix->PreLButtonDown(xPos, yPos, (uint32_t)wParam);
 		}
 		break;
 		case WM_LBUTTONUP:
@@ -121,7 +105,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 void UIX::move(Rect* rc) {
-	if (!rc || !IsWindow(m_hWnd)) return;
+	if (!rc || !IsWindow(hWnd)) return;
 
 	RECT rect;
 	rect.left = rc->left;
@@ -131,7 +115,7 @@ void UIX::move(Rect* rc) {
 
 	AdjustWindowRect(&rect, style, false);
 
-	MoveWindow(m_hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
+	MoveWindow(hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
 }
 
 UIX::UIX()
@@ -147,6 +131,7 @@ UIX::UIX()
 	lockerID = -2;
 	bAsyncTimer = false;
 	bDrawBoxModel = false;
+	bDrawMagnifier = false;
 	terminate = false;
 	terminated = true;
 	hTimer = NULL;
@@ -192,7 +177,7 @@ bool UIX::create(Rect* rc) {
 
 	AdjustWindowRect(&rect, style, false);
 
-	m_hWnd = CreateWindowExW(
+	hWnd = CreateWindowExW(
 		0,
 		CLASS_NAME,
 		L"Title",
@@ -207,12 +192,20 @@ bool UIX::create(Rect* rc) {
 		this
 	);
 
-	if (!IsWindow(m_hWnd)) return false;
+	if (!IsWindow(hWnd)) return false;
 
-	displayDC = ::GetDC(m_hWnd);
+	displayDC = ::GetDC(hWnd);
 	last_time = clock();
 	link_bitmap(width, height, OUI_BGR);
 	resize(width, height);
+
+	// init magnifier
+	magnifier.uix = this;
+	magnifier.godSheet = &sheet;
+	magnifier.create(0, 0, 100, 100, 0, false);
+	magnifier.show_window(false);
+
+	OUI::init();
 
 	return hdc && bit;
 }
@@ -224,7 +217,7 @@ UIX::~UIX()
 
 void UIX::show_window(bool show) {
 	container->invalidate();
-	ShowWindow(m_hWnd, show ? SW_SHOW : SW_HIDE);
+	ShowWindow(hWnd, show ? SW_SHOW : SW_HIDE);
 }
 
 bool UIX::ProcessMessages()
@@ -245,7 +238,7 @@ bool UIX::ProcessMessages()
 
 void UIX::set_title(std::wstring title)
 {
-	SetWindowTextW(m_hWnd, title.c_str());
+	SetWindowTextW(hWnd, title.c_str());
 }
 
 void UIX::OnIdle() {
@@ -340,18 +333,38 @@ BOOL UIX::OnEraseBkgnd(HDC pDC)
 
 void UIX::OnSize(size_t width, size_t height)
 {
-	if (!::IsWindow(m_hWnd)) return;
+	if (!::IsWindow(hWnd)) return;
 	RECT rc;
-	GetClientRect(m_hWnd, &rc);
+	GetClientRect(hWnd, &rc);
 	width = rc.right - rc.left;
 	height = rc.bottom - rc.top;
 	resize(width, height);
 	update();
 }
 
+void UIX::PreLButtonDown(int x, int y, uint32_t param) {
+	auto prev = lastLButtonDownTime;
+	lastLButtonDownTime = clock();
+	auto delta = lastLButtonDownTime - prev;
+	if (prev && delta <= (long)GetDoubleClickTime() && x == lXPos && y == lYPos) {
+		OnLButtonDblClk(param, x, y);
+	}
+	else {
+		lXPos = x;
+		lYPos = y;
+		OnLButtonDown(param, x, y);
+	}
+}
+
 void UIX::OnPaint()
 {
+	PAINTSTRUCT ps;
+	auto prevHDC = hdc;
+	HDC hdc = BeginPaint(hWnd, &ps);
+	this->hdc = hdc;
 	update();
+	EndPaint(hWnd, &ps);
+	this->hdc = prevHDC;
 }
 
 void UIX::OnTimer(uint32_t nEventID) {
@@ -372,6 +385,12 @@ void UIX::OnMouseMove(uint32_t nFlags, int x, int y)
 	cursorPos.set(x, y);
 	if (!container) return;
 	bool locked = is_locked();
+
+	if (bDrawMagnifier) {
+		int l = x - (magnifier.boxModel.width >> 1);
+		int t = y - (magnifier.boxModel.height >> 1);
+		magnifier.move(l, t);
+	}
 
 	for (auto it = menus.begin(); it != menus.end();) {
 		UIMenu* menu = (UIMenu*)it->second;
@@ -440,46 +459,17 @@ void UIX::OnMouseMove(uint32_t nFlags, int x, int y)
 		if (!curr) curr = OUI::find_element(container, x, y);
 		if (curr) {
 			if (!currentElementHovering || curr->get_id() != currentElementHovering->get_id()) {
-
-				OUI* parPrev = currentElementHovering ?
-					currentElementHovering : NULL;
-				OUI* parNext = NULL;
-
-				while (parPrev) {
-					OUI* parNext = curr->parent;
-					while (parNext != parPrev && parNext) {
-						parNext = parNext->parent;
-					}
-					if (parNext == parPrev)
-						break;
-					parPrev = parPrev->parent;
-				}
-
-				if (currentElementHovering) {
-					OUI* par = currentElementHovering;
-					while (par != parPrev && par) {
-						par->hover(false);
-						par = par->parent;
-					}
-				}
-
-				OUI* par = curr;
-				while (par != parNext && par) {
-					par->hover(true);
-					par = par->parent;
-				}
-
+				if (currentElementHovering) currentElementHovering->on_mouse_leave(curr);
+				curr->on_mouse_enter(currentElementHovering);
 				currentElementHovering = curr;
 			}
 		}
 
 		if (locked) {
-			if (currWindow)
-				currWindow->on_mouse_move(TORELX(x, currWindow->area), TORELY(y, currWindow->area), nFlags);
+			if (currentElementHovering)
+				currentElementHovering->on_mouse_move(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 		}
-		else if (currMenu) currMenu->on_mouse_move(TORELX(x, currMenu->area), TORELY(y, currMenu->area), nFlags);
-		else if (currWindow) currWindow->on_mouse_move(TORELX(x, currWindow->area), TORELY(y, currWindow->area), nFlags);
-		else if(currentElementHovering) currentElementHovering->on_mouse_move(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+		if (currentElementHovering) currentElementHovering->on_mouse_move(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 	}
 
 	update();
@@ -496,7 +486,7 @@ void UIX::OnLButtonDown(uint32_t nFlags, int x, int y)
 			if (!menu->area.is_inside(x, y) && !menu->parent->area.is_inside(x, y)) {
 				menu->show_window(false);
 				it = menus.erase(it);
-				if (menu->parent) 
+				if (menu->parent)
 					menu->parent->process_event(menu, Event::Deselect, 0, true);
 				invalidate();
 				continue;
@@ -554,9 +544,11 @@ void UIX::OnLButtonDown(uint32_t nFlags, int x, int y)
 				}
 			}
 
-			if (currMenu) currMenu->on_mouse_down(TORELX(x, currMenu->area), TORELY(y, currMenu->area), nFlags);
-			else if (currWindow) currWindow->on_mouse_down(TORELX(x, currWindow->area), TORELY(y, currWindow->area), nFlags);
-			else if (currentElementHovering) currentElementHovering->on_mouse_down(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+			/*if (currMenu) currentElementHovering->on_mouse_down(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+			else if (currWindow) currentElementHovering->on_mouse_down(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+			else */
+			
+			if (currentElementHovering) currentElementHovering->on_mouse_down(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 		}
 	}
 
@@ -598,8 +590,8 @@ void UIX::OnLButtonUp(uint32_t nFlags, int x, int y)
 		if (locked) {
 			if (currDialog->area.is_inside(x, y)) {
 				currWindow = OUI::find_element(currDialog, x, y);
-				if (currWindow)
-					currWindow->on_mouse_up(TORELX(x, currWindow->area), TORELY(y, currWindow->area), nFlags);
+				if (currWindow && currentElementHovering)
+					currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 			}
 		}
 		else
@@ -620,9 +612,10 @@ void UIX::OnLButtonUp(uint32_t nFlags, int x, int y)
 				}
 			}
 
-			if (currMenu) currMenu->on_mouse_up(TORELX(x, currMenu->area), TORELY(y, currMenu->area), nFlags);
-			else if (currWindow) currWindow->on_mouse_up(TORELX(x, currWindow->area), TORELY(y, currWindow->area), nFlags);
-			else if (currentElementHovering) currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+			//if (currMenu) currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+			//else if (currWindow) currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+			//else 
+			if (currentElementHovering) currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 		}
 	}
 
@@ -656,8 +649,8 @@ void UIX::OnLButtonDblClk(uint32_t nFlags, int x, int y)
 		if (locked) {
 			if (currDialog->area.is_inside(x, y)) {
 				currWindow = OUI::find_element(currDialog, x, y);
-				if (currWindow)
-					currWindow->on_dbl_click(TORELX(x, currWindow->area), TORELY(y, currWindow->area), nFlags);
+				if (currWindow && currentElementHovering)
+					currentElementHovering->on_dbl_click(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 			}
 		}
 		else
@@ -678,9 +671,10 @@ void UIX::OnLButtonDblClk(uint32_t nFlags, int x, int y)
 				}
 			}
 
-			if (currMenu) currMenu->on_dbl_click(TORELX(x, currMenu->area), TORELY(y, currMenu->area), nFlags);
-			else if (currWindow) currWindow->on_dbl_click(TORELX(x, currWindow->area), TORELY(y, currWindow->area), nFlags);
-			else if (currentElementHovering) currentElementHovering->on_dbl_click(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+			/*if (currMenu) currentElementHovering->on_dbl_click(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+			else if (currWindow) currentElementHovering->on_dbl_click(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+			else */
+			if (currentElementHovering) currentElementHovering->on_dbl_click(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 		}
 	}
 
@@ -691,7 +685,7 @@ BOOL UIX::OnMouseWheel(uint32_t nFlags, short zDelta, int x, int y)
 {
 	if (!container) return true;
 	RECT rc;
-	GetWindowRect(m_hWnd, &rc);
+	GetWindowRect(hWnd, &rc);
 	x -= rc.left;
 	y -= rc.top;
 
@@ -705,7 +699,7 @@ BOOL UIX::OnMouseWheel(uint32_t nFlags, short zDelta, int x, int y)
 			if (currDialog->area.is_inside(x, y)) {
 				currWindow = OUI::find_element(currDialog, x, y);
 				if (currWindow)
-					currWindow->on_mouse_wheel(TORELX(x, currWindow->area), TORELY(y, currWindow->area), zDelta, nFlags);
+					currentElementHovering->on_mouse_wheel(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), zDelta, nFlags);
 			}
 		}
 		else
@@ -726,8 +720,8 @@ BOOL UIX::OnMouseWheel(uint32_t nFlags, short zDelta, int x, int y)
 				}
 			}
 
-			if (currMenu) currMenu->on_mouse_wheel(TORELX(x, currMenu->area), TORELY(y, currMenu->area), zDelta, nFlags);
-			else if (currWindow) currWindow->on_mouse_wheel(TORELX(x, currWindow->area), TORELY(y, currWindow->area), zDelta, nFlags);
+			if (currMenu) currentElementHovering->on_mouse_wheel(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), zDelta, nFlags);
+			else if (currWindow) currentElementHovering->on_mouse_wheel(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), zDelta, nFlags);
 			else if (currentElementHovering) currentElementHovering->on_mouse_wheel(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), zDelta, nFlags);
 		}
 	}
@@ -770,9 +764,12 @@ void UIX::OnKeyDown(uint32_t nChar, uint32_t nRepCnt, uint32_t nFlags)
 
 void UIX::update() {
 #ifdef DEBUG_UPDATEFRAME
+	//clock_t b, e;
+	//b = clock();
+#endif
 	clock_t b, e;
 	b = clock();
-#endif
+
 	if (!container) {
 		bInvalidated = false;
 		return;
@@ -785,7 +782,7 @@ void UIX::update() {
 	if (visibleWindows < 0) throw;
 	bool drawWindows = visibleWindows > 0;
 	bool dragging = dragMan.mouseAction == MouseDragStatus::STRATED;
-	if (!bInvalidated && (bDrawBoxModel || drawMenus || drawWindows || dragging)) bInvalidated = true;
+	if (!bInvalidated && (bDrawBoxModel || bDrawMagnifier || drawMenus || drawWindows || dragging)) bInvalidated = true;
 	strbuffer = "";
 
 	if (bInvalidated)
@@ -866,10 +863,19 @@ void UIX::update() {
 			can.draw_text8((char*)s.c_str(), rc, spans, span_size);*/
 	}
 
+	if (bDrawMagnifier) {
+		magnifier.bInvalidated = true;
+		magnifier.on_update();
+	}
+
 	update_section(&container->area);
 
-#ifdef DEBUG_UPDATEFRAME
 	e = clock() - b;
+	strbuffer = std::to_string(e);
+	SetWindowTextA(hWnd, strbuffer.c_str());
+
+#ifdef DEBUG_UPDATEFRAME
+	/*e = clock() - b;
 	strbuffer = "";
 	if (watchList.size()) {
 		strbuffer = " [";
@@ -881,7 +887,7 @@ void UIX::update() {
 	strbuffer = std::to_string(countbuffer) + " items, " + (bInvalidated ? "UIX(1)" : "UIX(0)") + strbuffer;
 	sprintf_s(ocom::buff, sizeof(ocom::buff), "%dms | ", e);
 	strbuffer = std::string(ocom::buff) + strbuffer;
-	SetWindowTextA(m_hWnd, strbuffer.c_str());
+	SetWindowTextA(hWnd, strbuffer.c_str());*/
 #endif
 }
 
@@ -942,21 +948,18 @@ void UIX::link_bitmap(int iw, int ih, int nBits)
 	i.bmiHeader.biPlanes = 1;
 	i.bmiHeader.biSizeImage = iw * ih * nBits / 8;
 
+	pyte data = NULL;
 	hdc = CreateCompatibleDC(0);
-	bit = CreateDIBSection(hdc, &i, DIB_RGB_COLORS, (void**)&sheet.data, 0, 0);
+	bit = CreateDIBSection(hdc, &i, DIB_RGB_COLORS, (void**)&data, 0, 0);
 
 	SelectObject(hdc, bit);
 	nBytes = ::GetObjectA(bit, sizeof(DIBSECTION), &dibsection);
 	if (iw >= dibsection.dsBm.bmWidth || ih > dibsection.dsBm.bmHeight)
-		throw; 
+		throw;
 
-	sheet.w = sheet.sw = iw;
-	sheet.h = sheet.sh = ih;
-	sheet.pitch = dibsection.dsBm.bmWidthBytes;
-	sheet.nbpp = sheet.pitch / sheet.w;
-
-	sheet.pitexcess = sheet.pitch - sheet.sw * sheet.nbpp; 
-} 
+	int pitch = dibsection.dsBm.bmWidthBytes;
+	sheet.attach(data, iw, ih, pitch, dibsection.dsBm.bmBitsPixel / 8);
+}
 
 void UIX::lock_screen(int lockerID) {
 	if (this->lockerID > -2 || lockerID < -2) return;
@@ -972,7 +975,7 @@ void UIX::set_container(OUI* newContainer) {
 	if (!newContainer) return;
 	int w, h;
 	RECT rc;
-	GetClientRect(m_hWnd, &rc);
+	GetClientRect(hWnd, &rc);
 	w = rc.right - rc.left;
 	h = rc.bottom - rc.top;
 	container = newContainer;
@@ -1104,7 +1107,7 @@ void UIX::set_capture(OUI* element) {
 	if (element == container) return;
 	if (capturedElement != NULL) return;
 	capturedElement = element;
-	SetCapture(m_hWnd);
+	SetCapture(hWnd);
 }
 
 OUI* UIX::get_capture() {
@@ -1144,7 +1147,7 @@ bool UIX::set_focused_element(OUI* focusedElem) {
 
 void UIX::copy_to_clipboard(std::wstring str) {
 	if (str.length()) {
-		if (OpenClipboard(m_hWnd)) {
+		if (OpenClipboard(hWnd)) {
 			auto len = str.length();
 			HANDLE res = GlobalAlloc(GMEM_MOVEABLE, SIZE_T((len + 1) * sizeof(WCHAR)));
 
@@ -1173,7 +1176,7 @@ std::wstring UIX::copy_from_clipboard() {
 	std::wstring str = L"";
 
 	if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
-		if (OpenClipboard(m_hWnd)) {
+		if (OpenClipboard(hWnd)) {
 			HANDLE clip = GetClipboardData(CF_UNICODETEXT);
 			if (clip) {
 				WCHAR* text = (WCHAR*)GlobalLock(clip);
@@ -1301,6 +1304,51 @@ bool UIX::is_key_down(uint32_t key) {
 
 bool UIX::is_key_on(uint32_t key) {
 	return (GetKeyState(key) & 0x0001) != 0;
+}
+
+void UIX::show_magnifier(bool show, int width, int height, double scale) {
+	bDrawMagnifier = show;
+	magnifier.set_scale(scale);
+	auto pos = get_cursor_pos();
+	magnifier.move(pos.x, pos.y, width, height);
+	magnifier.show_window(bDrawMagnifier);
+}
+
+void UIX::show_box_model(bool show) {
+	if (show == bDrawBoxModel) return;
+	bDrawBoxModel = show;
+	bInvalidated = true;
+}
+
+void UIX::set_magnifier_scale(double scale) {
+	magnifier.set_scale(scale);
+}
+
+void UIX::apply_theme_all(OUI* element) {
+	element->apply_theme(false);
+	for (auto e : element->elements)
+		apply_theme_all(e);
+}
+
+void UIX::apply_theme_all() {
+	// apply to container, menus and windows
+	if (container)
+		apply_theme_all(container);
+	for (auto& m : menus)
+		apply_theme_all(m.second);
+	for (auto w : windows)
+		apply_theme_all(w);
+}
+
+void UIX::show_window(UIWindow* window, bool show) {
+	if (show != window->bVisible) {
+		visibleWindows += (show ? +1 : -1);
+		window->bVisible = show;
+	}
+}
+
+HWND UIX::get_hwnd() {
+	return hWnd;
 }
 
 #endif

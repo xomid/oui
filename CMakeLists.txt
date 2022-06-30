@@ -41,6 +41,12 @@ target_link_libraries(${PROJECT_NAME} ocom freetype harfbuzz expat::expat)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
+target_compile_options(${PROJECT_NAME} PRIVATE
+  $<$<CXX_COMPILER_ID:MSVC>:/W0>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-w>
+)
+
+
 if(WIN32)
 	set(PUBLIC_HEADER_LOCATION "${GLOBAL_OUT_DIR}/include/${PROJECT_NAME}")
 	file(GLOB PUBLIC_HEADERS "${CMAKE_SOURCE_DIR}/include/*.h")

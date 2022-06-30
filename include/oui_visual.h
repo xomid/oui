@@ -20,9 +20,10 @@ enum class OUI_API MouseDragDirection {
 	BOTHDIR
 };
 
-template<typename T>
+template<typename T, typename Offset>
 struct Drag {
-	vec<T> offset, elemPos;
+	vec<Offset> offset;
+	vec<T> elemPos;
 	MouseDragStatus mouseAction;
 	MouseDragDirection dragDir;
 
@@ -30,13 +31,13 @@ struct Drag {
 		stopDragging();
 	}
 
-	void startDragging(int x, int y, T elemX, T elemY, MouseDragDirection dir = MouseDragDirection::BOTHDIR) {
+	void startDragging(Offset x, Offset y, T elemX, T elemY, MouseDragDirection dir = MouseDragDirection::BOTHDIR) {
 		offset.reset(x, y);
 		elemPos.reset(elemX, elemY);
 		mouseAction = MouseDragStatus::STRATED;
 		dragDir = dir;
 	}
-	bool drag(int x, int y, T& newX, T& newY) {
+	bool drag(Offset x, Offset y, T& newX, T& newY) {
 		if (mouseAction == MouseDragStatus::STOPPED) return false;
 
 		switch (dragDir) {
@@ -58,8 +59,8 @@ struct Drag {
 	}
 
 	void stopDragging() {
-		offset.reset(0, 0);
-		elemPos.reset(0, 0);
+		offset.reset((Offset)0, (Offset)0);
+		elemPos.reset((T)0, (T)0);
 		mouseAction = MouseDragStatus::STOPPED;
 	}
 };
@@ -113,7 +114,9 @@ public:
 
 class OUITheme {
 public:
-	OUI_API static Color primary, border, borderActive, textSelection, text,
+	OUI_API static Color
+		primary, secondary, text,
+		border, borderActive, textSelection,
 		scroll, windowBorder, windowShadow, windowTitleBar;
 	OUI_API static int activeBorderWidth;
 };

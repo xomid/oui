@@ -16,7 +16,11 @@ private:
 public:
 	UINumber();
 
-	Float get_number() const;
+	void set_value(double value);
+	void set_value(std::string value);
+	void set_range(double num, double step, double minValue, double maxValue);
+	void set_range(std::string num, std::string step, std::string minValue, std::string maxValue);
+	std::string get_number() const;
 	void set_text(std::wstring newText) override;
 	void trigger_update() override;
 	void on_key_down(uint32_t key, uint32_t nrep = 1, uint32_t flags = 0) override;

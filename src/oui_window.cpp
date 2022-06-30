@@ -21,6 +21,14 @@ void draw_X_icon(Canvas& canvas, Rect& rect, Color color, double width, byte opa
 	rasInd.render(false);
 }
 
+void UIWindow::apply_theme(bool bInvalidate) {
+	set_background_color(OUITheme::primary);
+	set_color(OUITheme::text);
+	btnCloseColor = backgroundColor.get_contrast_color();
+	crHover.brightness(&backgroundColor, -20);
+	crDown.brightness(&backgroundColor, -40);
+}
+
 OUI* UIWindow::create(int left, int top, int width, int height, OUI* caller, WindowType type) {
 	border.set(1, OUITheme::windowBorder);
 	icw = int(InitialValues::titleBarHeight * 1.4), ich = InitialValues::titleBarHeight;
@@ -55,15 +63,12 @@ void UIWindow::on_update() {
 	Rect rc(L, T, w, h);
 	Spacing pad;
 	Rect rcc;
-
-	Color cr(0, 0, 0), cr2("#fff");
-	pad.set(11);
 	Border bord;
-	rcc.set(L + w - icw, T, icw, ich);
-	Color crHover, crDown;
-	crHover.brightness(&backgroundColor, -20);
-	crDown.brightness(&backgroundColor, -40);
+	Color cr2 = btnCloseColor;
 
+	pad.set(11);
+	rcc.set(L + w - icw, T, icw, ich);
+	
 	if (!btnCloseHover && btnCloseDown)
 		int t = 0;
 
@@ -169,8 +174,7 @@ void UIWindow::close(uint32_t wmsg) {
 
 void UIWindow::show_window(bool show) {
 	if (!uix) return;
-	if (bVisible != show) uix->visibleWindows += (show ? +1 : -1);
-	OUI::show_window(show);
+	uix->show_window(this, show);
 	if (type == WindowType::Dialog) {
 		bVisible = uix->pop_up_dialog(this) ? show : false;
 	}

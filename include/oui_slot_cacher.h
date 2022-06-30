@@ -64,6 +64,8 @@ public:
 
 	static bool check_ready();
 	static int init();
+	static void destroy();
+
 	static FT_Face add_font_from_memory(std::wstring& name, const byte* fontData, size_t fontSize);
 	static FT_Face add_font(std::wstring& name, std::wstring path);
 	static void shape8(char* text, size_t len, FaceHandle& handle);

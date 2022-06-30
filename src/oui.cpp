@@ -39,12 +39,18 @@ OUI* OUI::find_element(OUI* curr, int x, int y)
 
 int OUI::init() {
 	auto res = SlotCacher::init();
+	if (!blur_stack) blur_stack = new byte[256];
 	return res;
+}
+
+void OUI::destroy() {
+	delete[] blur_stack;
+	blur_stack = NULL;
+	SlotCacher::destroy();
 }
 
 OUI::OUI() {
 	Color c;
-	if (!blur_stack) blur_stack = new byte[256];
 	menu = NULL;
 	parent = NULL;
 	godSheet = NULL;
@@ -68,6 +74,10 @@ OUI::OUI() {
 	overflow = Overflow::visible;
 	menuType = MenuType::Fluid;
 	menuActivationMode = MenuActivationMode::PointerHover;
+
+	backgroundColor = OUITheme::primary;
+	color = OUITheme::text;
+
 	boxModel.reset();
 	padding.reset();
 	border.reset();
@@ -77,13 +87,6 @@ OUI::OUI() {
 	canvas.set_area(&area);
 	canvas.add_font(fontName = InitialValues::fontName, L"C:\\dev\\fonts\\SegoeUIVF.ttf");
 	canvas.load_handle(fontName, fontSize = InitialValues::fontSize);
-}
-
-OUI::~OUI() {
-	if (blur_stack) {
-		delete[] blur_stack;
-		blur_stack = NULL;
-	}
 }
 
 void OUI::on_update() {
@@ -100,7 +103,7 @@ void OUI::on_update() {
 	}
 	else {
 		Border& bor = border;
-		if (bor.left || bor.right || bor.top || bor.bottom) {
+		if (!border.is_empty()) {
 			//if (bActive) canvas.render(shape.ras, shape.sl, OUITheme::borderActive);
 			canvas.render(shape.ras, shape.sl, border.leftColor);
 		}
@@ -123,7 +126,7 @@ void OUI::move_shape() {
 	w = area.width;
 	h = area.height;
 
-	if (!borderRadius.bset) {
+	if (borderRadius.is_empty()) {
 		shape.recti(0, 0, w, h);
 		contentShape.recti(l, t, rc.width, rc.height);
 		absContentShape.recti(area.left + l, area.top + t, rc.width, rc.height);
@@ -144,7 +147,7 @@ void OUI::calc_shape() {
 	w = area.width;
 	h = area.height;
 
-	if (!borderRadius.bset) {
+	if (borderRadius.is_empty()) {
 		shape.recti(0, 0, w, h);
 		contentShape.recti(l, t, rc.width, rc.height);
 		absContentShape.recti(area.left + l, area.top + t, rc.width, rc.height);
@@ -534,6 +537,12 @@ OUI* OUI::get_draggable(int x, int y, uint32_t flags) {
 	return bDraggable && (parent ? parent->on_drag_start(this) : true) ? this : 0;
 }
 
+void OUI::apply_theme(bool bInvalidate) {
+	set_background_color(OUITheme::primary);
+	set_color(OUITheme::text);
+	if (bInvalidate) invalidate();
+}
+
 OUI* OUI::create(int left, int top, int width, int height, OUI* parent, bool bAddToParent) {
 	if (width < 0) left += width, width = -width;
 	if (height < 0) top += height, height = -height;
@@ -541,6 +550,7 @@ OUI* OUI::create(int left, int top, int width, int height, OUI* parent, bool bAd
 	scrollX = new UIScroll();
 	scrollY = new UIScroll();
 	if (!scrollX || !scrollY) return this;
+	bVisible = true;
 
 	if (parent) {
 		if (bAddToParent) parent->add_element(this);
@@ -548,17 +558,35 @@ OUI* OUI::create(int left, int top, int width, int height, OUI* parent, bool bAd
 		uix = parent->uix;
 		godSheet = parent->godSheet;
 		uix->add_element(this);
-		set_font_name(parent->fontName);
+		fontName = parent->fontName;
 	}
+
+	canvas.set_sheet(godSheet);
+	boxModel.left = left;
+	boxModel.top = top;
+	boxModel.width = width;
+	boxModel.height = height;
+	update_position();
+
+	set_font_name(fontName);
+
 	scrollX->create(0, 0, 10, 10, this, false);
 	scrollY->create(0, 0, 10, 10, this, false);
-	canvas.set_sheet(godSheet);
-	set_background_color(OUITheme::primary);
-	set_color(OUITheme::text);
-	bVisible = true;
+	scrollY->mode = ScrollMode::Vertical;
+	scrollX->mode = ScrollMode::Horizontal;
+	
+	get_content_area(contentArea);
+	
+	if (bScrollable) {
+		if (scrollX && scrollX->bVisible)
+			scrollX->on_parent_resize();
+		if (scrollY && scrollY->bVisible)
+			scrollY->on_parent_resize();
+	}
 
-	OUI::move(left, top, width, height);
+	apply_theme(false);
 	on_init();
+	on_resize(contentArea.width, contentArea.height);
 	calc_shape();
 	bCreated = true;
 	return this;
@@ -652,14 +680,14 @@ void OUI::move_fast(int left, int top, int width, int height) {
 
 void OUI::process_event(OUI* element, uint32_t message, uint64_t param, bool bubbleUp) {
 	if (bScrollable) {
-		if (message == Event::Scroll && element == scrollY) {
-			int p = param & 0xffffffff;
-			UIScroll* scroll = (UIScroll*)element;
+		if (message == Event::Scroll && (element == scrollY || element == scrollX)) {
+			int dir = ((param) >> 16) & 0xffff;
+			int p = param & 0xffff;
+			auto scroll = (UIScroll*)element;
 			scroll->set_handle_pos(p);
 			p = scroll->get_pos();
-			if (scroll == scrollY) move_page(0, p);
-			else move_page(p, 0);
-			invalidate();
+			if (dir == 1) move_page_ver(p);
+			else move_page_hor(p);
 			return;
 		}
 	}
@@ -727,7 +755,7 @@ void OUI::remove_element(OUI* element) {
 inline bool OUI::check_transparency() {
 	bool trans = false
 		|| BYTE_NOT_OPAQUE(backgroundColor.a)
-		|| borderRadius.bset
+		|| !borderRadius.is_empty()
 		|| ((border.left || border.top || border.right || border.bottom) &&
 			(BYTE_NOT_OPAQUE(border.leftColor.a) ||
 				BYTE_NOT_OPAQUE(border.topColor.a) ||
@@ -802,6 +830,7 @@ void OUI::on_key_down(uint32_t key, uint32_t nrep, uint32_t flags) {
 }
 
 void OUI::on_mouse_enter(OUI* prev) {
+	hover(true);
 	if (menu && menu->menuActivationMode == MenuActivationMode::PointerHover) {
 		menu->pop_up();
 	}
@@ -809,6 +838,7 @@ void OUI::on_mouse_enter(OUI* prev) {
 }
 
 void OUI::on_mouse_leave(OUI* next) {
+	hover(false);
 	invalidate();
 }
 
@@ -843,23 +873,23 @@ bool OUI::select(bool bSelect) {
 }
 
 void OUI::hover(bool bHover) {
-	if (this->bHover && !bHover)
+	/*if (this->bHover && !bHover)
 		this->on_mouse_leave(0);
 	else if (!this->bHover && bHover)
 		this->on_mouse_enter(0);
-	else return;
+	else return;*/
 
 	this->bHover = bHover;
 	invalidate();
 }
 
-void OUI::set_background_color(Color cr) {
-	backgroundColor.set(cr);
+void OUI::set_background_color(Color backgroundColor) {
+	this->backgroundColor.set(backgroundColor);
 	invalidate();
 }
 
-void OUI::set_color(Color cr) {
-	color.set(cr);
+void OUI::set_color(Color color) {
+	this->color.set(color);
 	canvas.art.textColor.set(color);
 	invalidate();
 }
@@ -881,14 +911,6 @@ void OUI::set_text(std::wstring text) {
 	invalidate();
 }
 
-void OUI::set_color(byte red, byte green, byte blue, byte alpha) {
-	set_color(Color(red, green, blue));
-}
-
-void OUI::set_background_color(byte red, byte green, byte blue, byte alpha) {
-	set_background_color(Color(red, green, blue));
-}
-
 bool OUI::is_within(int absX, int absY) {
 	return area.is_inside(absX, absY);
 	return false;
@@ -901,7 +923,7 @@ void OUI::set_border_radius(double lt, double rt, double rb, double lb) {
 }
 
 void OUI::remove_border_radius() {
-	borderRadius.remove();
+	borderRadius.set(0);
 	calc_shape();
 	invalidate();
 }
@@ -983,6 +1005,21 @@ bool OUI::is_child_visible(OUI* child) {
 void OUI::move_page(int left, int top) {
 	if (scrollY) scrollY->set_pos(top);
 	if (scrollX) scrollX->set_pos(left);
+	if (scrollX || scrollY) invalidate();
+}
+
+void OUI::move_page_ver(int top) {
+	if (scrollY) {
+		scrollY->set_pos(top);
+		invalidate();
+	}
+}
+
+void OUI::move_page_hor(int left) {
+	if (scrollX) {
+		scrollX->set_pos(left);
+		invalidate();
+	}
 }
 
 void OUI::on_init() {

@@ -62,7 +62,9 @@ void UIScroll::calc_shape() {
 void UIScroll::calc_handle() {
 	BorderRadius rad;
 	rad.lt = rad.lb = rad.rt = rad.rb = max(max(handleArea.width, handleArea.height) / 2, 0);
-	handle.rounded_rect(handleArea.left, handleArea.top, CLAMP3(0, handleArea.width, handleArea.width), CLAMP3(0, handleArea.height, handleArea.height), rad);
+	handle.rounded_rect(handleArea.left, handleArea.top, 
+		CLAMP3(0, handleArea.width, handleArea.width), 
+		CLAMP3(0, handleArea.height, handleArea.height), rad);
 }
 
 void UIScroll::on_resize(int width, int height) {
@@ -114,15 +116,15 @@ void UIScroll::set_handle_pos(int pos) {
 
 void UIScroll::calc_handle_pos(int pos) {
 	int total = get_total();
+	handleLength = page > 0 ? CLAMP3(40, int((double)viewport / page * total), total) : total;
 	if (mode == ScrollMode::Vertical)
 		handlePos = CLAMP3(0, pos, contentArea.height - handleLength);
 	else
 		handlePos = CLAMP3(0, pos, contentArea.width - handleLength);
-	handleLength = page > 0 ? CLAMP3(40, int((double)viewport / page * total), total) : total;
 	if (mode == ScrollMode::Vertical)
-		handleArea.set(0, handlePos, contentArea.width, handleLength);
+		handleArea.set(contentArea.left, contentArea.top + handlePos, contentArea.width, handleLength);
 	else
-		handleArea.set(handlePos, 0, handleLength, contentArea.height);
+		handleArea.set(contentArea.left + handlePos, contentArea.top, handleLength, contentArea.height);
 	calc_handle();
 	invalidate();
 }

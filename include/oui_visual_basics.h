@@ -68,17 +68,17 @@ struct OUI_API Spacing {
 	void set(int leftRight, int topBottom);
 	void set(int top, int leftRight, int bottom);
 	void set(int top, int right, int bottom, int left);
+	bool is_empty();
 };
 
 struct OUI_API BorderRadius {
 	double lt, rt, rb, lb;
-	bool bset;
 	void reset();
 	void set(double lt, double rt, double rb, double lb);
 	void set(int topLeft, int topRightBottomLeft, int bottomRight);
 	void set(int all);
 	void set(int topLeftBottomRight, int topRightBottomLeft);
-	void remove();
+	bool is_empty();
 };
 
 struct OUI_API Border : public Spacing {

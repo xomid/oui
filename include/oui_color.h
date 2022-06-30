@@ -59,7 +59,20 @@ public:
 	bool has_brightness();
 	bool is_inherited();
 	bool is_none();
+	Color get_contrast_color() const;
 };
+
+
+OUI_API Color rand_color(size_t index);
+
+OUI_API void rgb_to_hsb(int red, int green, int blue, int& hue, int& sat, int& bri);
+
+OUI_API void hsb_to_rgb(int hue, int sat, int bri, byte& red, byte& green, byte& blue);
+
+
+
+
+
 
 class Colors {
 public:
@@ -212,4 +225,3 @@ public:
 		yellowgreen{ 154, 205, 50, 255 };
 };
 
-OUI_API Color rand_color(size_t index);

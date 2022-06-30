@@ -229,9 +229,9 @@ void UICheck::gen_check_shape(Sheet& sheet, Color back, Color color, Color norma
 			}
 
 			if (mode == 3) {
+				*d++ = backB;
 				*d++ = backG;
-				*d++ = backG;
-				*d++ = backG;
+				*d++ = backR;
 			}
 		}
 	}

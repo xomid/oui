@@ -22,6 +22,8 @@ public:
 	void on_update() override;
 	void measure_size(int* width, int* height) override;
 	void on_resize(int width, int height) override;
+	void move_page_ver(int top) override;
+	void move_page_hor(int left) override;
 	void move_page(int left, int top) override;
 	virtual void measure_content(int* width, int* height);
 };

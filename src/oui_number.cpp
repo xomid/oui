@@ -100,8 +100,8 @@ void UINumber::trigger_update() {
 	UIText::trigger_update();
 }
 
-Float UINumber::get_number() const {
-	return number.get_number();
+std::string UINumber::get_number() const {
+	return number.get_value();
 }
 
 void UINumber::increase() {
@@ -219,4 +219,30 @@ void UINumber::on_mouse_leave(OUI* next) {
 	btnIncrease.adj_colors();
 	btnDecrease.adj_colors();
 	invalidate();
+}
+
+void UINumber::set_range(double num, double step, double minValue, double maxValue) {
+	number.set_value(num);
+	number.set_step(step);
+	number.set_min(minValue);
+	number.set_max(maxValue);
+	num_to_text();
+}
+
+void UINumber::set_range(std::string num, std::string step, std::string minValue, std::string maxValue) {
+	number.set_value(num);
+	number.set_step(step);
+	number.set_min(minValue);
+	number.set_max(maxValue);
+	num_to_text();
+}
+
+void UINumber::set_value(double value) {
+	number.set_value(value);
+	num_to_text();
+}
+
+void UINumber::set_value(std::string value) {
+	number.set_value(value);
+	num_to_text();
 }

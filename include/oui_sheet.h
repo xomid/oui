@@ -50,7 +50,7 @@ public:
     typedef typename blender_type::order_type order_type;
     typedef typename color_type::value_type value_type;
     typedef typename color_type::calc_type calc_type;
-   
+
 public:
     explicit pixfmt_alpha_blend_rgb_clip(Sheet* sheet, Rect* area) : sheet(sheet), area(area) {
     }
@@ -64,7 +64,7 @@ public:
         copy_hline(x, y, len, Color(c.r, c.g, c.b, c.a));
     }
 
-    AGG_INLINE void copy_hline(int x, int y, unsigned len, Color& c)  {
+    AGG_INLINE void copy_hline(int x, int y, unsigned len, Color& c) {
         if (!sheet) return;
         int count;
         byte cla, _cla, * d, r, g, b, red, grn, blu, alpha, calpha, a, _a;
@@ -94,7 +94,7 @@ public:
             d[0] = CLAMP255(DIV255(blu * cla + (d[0] * _cla)));
             d[1] = CLAMP255(DIV255(grn * cla + (d[1] * _cla)));
             d[2] = CLAMP255(DIV255(red * cla + (d[2] * _cla)));
- 
+
             d += 3;
             if (++x >= sheet->w) return;
             if (!--count)
@@ -409,7 +409,7 @@ public:
 
 private:
     Sheet* sheet;
-    Rect*  area;
+    Rect* area;
 };
 
 typedef pixfmt_alpha_blend_rgb_clip<agg::blender_bgr24, agg::rendering_buffer, 3> pixfmt_bgr;
@@ -509,6 +509,8 @@ struct OUI_API Sheet
 {
     int w, h, sw, sh, nbpp, pitch, temp, pitexcess, lastY;
     pyte data;
+    bool bAttached;
+
     std::vector<ShapeStorage*> clipArea;
     ShapeStorage* curr;
     scanline::const_iterator span;
@@ -517,17 +519,26 @@ struct OUI_API Sheet
     double x1, x2, y1, y2;
 
     Sheet();
+    ~Sheet();
+
     void free();
     void setclip(ShapeStorage* shape, byte opacity, bool reverse = false);
     void unclip();
     void clear_solid(Color& color);
     void resize(int cx, int cy);
     void destroy();
-    void create(int width, int height, int nbpp);
+    int create(int width, int height, int nbpp);
+    int clone(const Sheet* source);
+    int copy(const Sheet* source);
+    void attach(pyte data, int width, int height, int pitch, int nbpp);
     void clear(byte v = 0);
     void clear(byte red, byte green, byte blue);
-    bool getPixel(int x, int y, byte* res);
-    bool getPixel(int x, int y, byte* r, byte* g, byte* b);
+    bool getPixel(int x, int y, byte* res) const;
+    bool getPixel(int x, int y, byte* r, byte* g, byte* b) const;
+
+    inline bool is_useless() const {
+        return (!data || w < 1 || h < 1 || nbpp < 1 || nbpp > 4 || pitch < w);
+    }
 
     inline void __rect_alpha(int x, double x0, double x1, int w, byte& a, int& c) {
         int _x = x << 8;

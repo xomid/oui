@@ -6,10 +6,11 @@ std::wstring InitialValues::fontName = L"initial";
 int InitialValues::titleBarHeight = 32;
 
 Color OUITheme::primary("#1e2026");
+Color OUITheme::secondary("#2d3039");
+Color OUITheme::text(0xaf, 0xaf, 0xaf);
 Color OUITheme::border(67, 67, 67);
 Color OUITheme::borderActive(0xf, 0xa6, 0xff);
 Color OUITheme::textSelection(0xf, 0xa6, 0xff);
-Color OUITheme::text(0xaf, 0xaf, 0xaf);
 Color OUITheme::scroll(0xaf, 0xaf, 0xaf);
 int OUITheme::activeBorderWidth = 2;
 Color OUITheme::windowBorder = Color(0x1f, 0x1f, 0x1f, 40);

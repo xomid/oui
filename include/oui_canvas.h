@@ -80,4 +80,8 @@ public:
 	void load_handle(std::wstring& fontName, int fontSize) {
 		SlotCacher::load_handle(fontName, fontSize, faceHandle);
 	}
+
+	void Canvas::draw_circle(double cx, double cy, double radius, double strokeWidth, 
+		int strokeMode, // 0 outer, 1 mid, 2 inner
+		Color& back, Color& stroke, Color& fill);
 };

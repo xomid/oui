@@ -103,13 +103,20 @@ UIRadio::UIRadio() {
 }
 
 OUI* UIRadio::create(int left, int top, int width, int height, OUI* parent, bool bAddToParent) {
-	auto res = UILink::create(left, top, width, height, parent, bAddToParent);
-	if(parent) set_background_color(parent->backgroundColor);
 	int shapeH = CLAMP3(8, height, 20), shapeW = shapeH;
+	
+	auto res = UILink::create(left, top, width, height, parent, bAddToParent);
+
+	if (parent && type != UIRadioType::Button) {
+		set_background_color(parent->backgroundColor);
+	}
+	if (type == UIRadioType::Radio) {
+		padding.left = shapeLeft + shapeW + shapeMargin;
+	}
+
 	shapeLeft = 0;
 	shapeMargin = 5;
 	shape.create(shapeW, shapeH, 3);
-	padding.left = shapeLeft + shapeW + shapeMargin;
 
 	borderColor.set("#0067c0");
 	normalBorderColor.set("#666");
@@ -125,8 +132,20 @@ void UIRadio::set_type(UIRadioType type) {
 }
 
 void UIRadio::on_update() {
-	UILabel::on_update();
-	canvas.bit_blt(shape, shapeLeft, (boxModel.height - shape.h) / 2, shape.w, shape.h, 0, 0, true);
+	if (type == UIRadioType::Radio)
+	{
+		UILabel::on_update();
+		canvas.bit_blt(shape, shapeLeft, (boxModel.height - shape.h) / 2, shape.w, shape.h, 0, 0, true);
+	}
+	else {
+		auto c = backgroundColor;
+		if (bSelected || (bPressed && bHover))
+			backgroundColor.set(downBackColor);
+		else if (bHover)
+			backgroundColor.set(hoverBackColor);
+		UILabel::on_update();
+		backgroundColor = c;
+	}
 }
 
 bool UIRadio::select(bool bSelect) {

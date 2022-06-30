@@ -2044,6 +2044,7 @@ void Canvas::clear(Rect& rect, Border& bor, Color& color, byte opacity) {
 	int w, h, px, eex, sx, sy, ex, ey, dx, dy, x, y, cx, cy, count;
 	byte cla, clp, a, p, borLA, borLP, borTA, borTP, borRA, borRP, borBA, borBP;
 
+
 	w = sheet->w;
 	h = sheet->h;
 	x = rect.left;
@@ -2091,13 +2092,13 @@ void Canvas::clear(Rect& rect, Border& bor, Color& color, byte opacity) {
 				}
 
 				if (BYTE_OPAQUE(cla)) {
-					if (x < eex) {
+					if (count > 1 && x < eex) {
 						*(int*)d = px;
 					}
 					else {
-						byte c = d[3];
-						*(int*)d = px;
-						d[3] = c;
+						d[0] = color.b;
+						d[1] = color.g;
+						d[2] = color.r;
 					}
 				}
 				else {
@@ -2584,13 +2585,13 @@ int Canvas::draw_tag8(char* text, size_t len, int x, int y, int dir, bool invert
 		if (dir == 0) rc.set(int(x - w2), int(y - arrowH - h), w, h);
 		else if (dir == 1) rc.set(int(x + arrowW), int(y - arrowH - h), w, h);
 		else if (dir == 2) rc.set(int(x + arrowW), int(y - h2), w, h);
-		else if (dir == 3) rc.set(int(x + arrowW), int(+ arrowH), w, h);
+		else if (dir == 3) rc.set(int(x + arrowW), int(+arrowH), w, h);
 		else if (dir == 4) rc.set(int(x - w2), int(y + arrowH), w, h);
 		else if (dir == 5) rc.set(int(x - arrowW - w), int(y + arrowH), w, h);
 		else if (dir == 6) rc.set(int(x - arrowW - w), int(y - h2), w, h);
 		else if (dir == 7) rc.set(int(x - arrowW - w), int(y - arrowH - h), w, h);
 	}
-	
+
 	ShapeStorage roundedBox;
 	roundedBox.rounded_rect(rc.left, rc.top, rc.width, rc.height, borderRadius);
 	roundedBox.normalize_radius();
@@ -2610,7 +2611,7 @@ int Canvas::draw_tag8(char* text, size_t len, int x, int y, int dir, bool invert
 		else if (dir == 1) {
 			arrow.move_to(x - arrowW - w, y + arrowH + h);
 			arrow.line_to((double)x - w, (double)y + h - Max(borderRadius.lb, mnH * sn));
-			arrow.line_to((double)x - w + Max(borderRadius.lb, mnW * cs), (double)y + h );
+			arrow.line_to((double)x - w + Max(borderRadius.lb, mnW * cs), (double)y + h);
 		}
 		else if (dir == 2) {
 			arrow.move_to(x - arrowW - w, y);
@@ -2642,7 +2643,7 @@ int Canvas::draw_tag8(char* text, size_t len, int x, int y, int dir, bool invert
 			arrow.line_to(x + w - Max(borderRadius.rb, mnW * cs), y + h);
 			arrow.line_to(x + w, y + h - Max(borderRadius.rb, mnH * sn));
 		}
-	} 
+	}
 	else {
 		arrow.move_to(x, y);
 		if (dir == 0) {
@@ -2678,7 +2679,7 @@ int Canvas::draw_tag8(char* text, size_t len, int x, int y, int dir, bool invert
 			arrow.line_to(x - arrowW, y - arrowH - Max(borderRadius.rb, mnH * sn));
 		}
 	}
-	
+
 
 	arrow.close_polygon();
 	add_path(roundedBox);
@@ -2877,523 +2878,192 @@ int Canvas::draw_tag16(wchar_t* text, size_t len, int x, int y, int dir, bool in
 	return textSize.width;
 }
 
+void Canvas::draw_circle(double cx, double cy, double radius, double strokeWidth, int strokeMode, // 0 outer, 1 mid, 2 inner
+	Color& back, Color& stroke, Color& fill) {
 
+	byte a, ca, resA, resR, resG, resB, resAA;
+	pyte data = sheet->data, d;
+	auto pitch = sheet->pitch;
+	double outerRad, innerRad, dis, rem, outerRadCeil, innerRadCeil, disx, disy;
+	int x, y, dy, w, h, sx, sy, dright, dbottom;
 
+	outerRad = strokeWidth + radius;
+	if (strokeMode == 1)
+		outerRad = radius + strokeWidth / 2.;
+	else if (strokeMode == 2)
+		outerRad = radius;
 
+	byte innerR = fill.r, innerG = fill.g, innerB = fill.b, innerA = fill.a, innerAA = 0xff - innerA,
+		outerR = stroke.r, outerG = stroke.g, outerB = stroke.b, outerA = stroke.a, outerAA = 0xff - outerA,
+		backR = back.r, backG = back.g, backB = back.b, backA = back.a, backAA = 0xff - innerA;
 
+	innerRad = outerRad - strokeWidth;
+	outerRadCeil = outerRad + 1;
+	innerRadCeil = innerRad + 1;
 
+	w = h = int(ceil(radius) * 2.);
+	dright = sheet->w - 1;
+	dbottom = sheet->h - 1;
 
+	// areas:
+	// outer empty
+	// outer AA
+	// outer solid
+	// inner/outer common AA
+	// inner solid
 
+	if (area) {
+		sx = area->left;
+		sy = area->top;
+	}
+	else {
+		sx = 0;
+		sy = 0;
+	}
 
+	int fx = int(cx - radius);
+	int fy = int(cy - radius);
+	sx += fx;
+	sy += fy;
+	cx -= fx;
+	cy -= fy;
+	int dsx, dex;
+	dsx = CLAMP3(0, sx, dright);
+	dex = CLAMP3(0, dsx + w, sheet->w);
 
+	for (y = 0; y < h; ++y) {
+		dy = y + sy;
 
+		if (dy < 0 || dy > dbottom)
+			continue;
 
+		d = data + dy * pitch + dsx * 3;
+		for (x = dsx; x < dex; ++x) {
+			disx = fabs((double)(x - sx) - cx);
+			disy = fabs((double)y - cy);
+			if (x >= cx) disx += 1;
+			if (y >= cy) disy += 1;
+			dis = hypot(disx, disy);
 
+			if (dis < outerRadCeil) {
+				if (dis <= outerRad) {
+					if (dis <= innerRadCeil) {
+						// inner circle solid
+						if (dis <= innerRad) {
+							if (innerA == 0xff) {
+								*d++ = innerB;
+								*d++ = innerG;
+								*d++ = innerR;
+							}
+							else if (innerA > 0) {
+								*d = CLAMP255(DIV255(innerA * innerB + innerAA * *d)); ++d;
+								*d = CLAMP255(DIV255(innerA * innerG + innerAA * *d)); ++d;
+								*d = CLAMP255(DIV255(innerA * innerR + innerAA * *d)); ++d;
+							}
+							else {
+								d += 3;
+							}
+						}
+						// inner/outer common AA
+						else {
+							rem = dis - innerRad;
+							a = CLAMP255(int(rem * 0xff));
+							ca = 0xff - a;
 
+							a = DIV255(outerA * a);
+							ca = DIV255(innerA * ca);
+							resA = 0xff - DIV255((0xff - a) * (0xff - ca));
+							
+							if (resA == 0) {
+								d += 3;
+							}
+							else {
+								byte aa = 0xff - a;
+								resR = (outerR * a * 255 / resA + innerR * ca * aa / resA) / 255;
+								resG = (outerG * a * 255 / resA + innerG * ca * aa / resA) / 255;
+								resB = (outerB * a * 255 / resA + innerB * ca * aa / resA) / 255;
 
+								if (resA == 0xff) {
+									*d++ = resB;
+									*d++ = resG;
+									*d++ = resR;
+								}
+								else if (resA > 0) {
+									resAA = 0xff - resA;
+									*d = CLAMP255(DIV255(resA * resB + resAA * *d)); ++d;
+									*d = CLAMP255(DIV255(resA * resG + resAA * *d)); ++d;
+									*d = CLAMP255(DIV255(resA * resR + resAA * *d)); ++d;
+								}
+							}
+						}
+					}
+					// outer circle solid
+					else {
+						if (outerA == 0xff) {
+							*d++ = outerB;
+							*d++ = outerG;
+							*d++ = outerR;
+						}
+						else if (outerA > 0) {
+							*d = CLAMP255(DIV255(outerA * outerB + outerAA * *d)); ++d;
+							*d = CLAMP255(DIV255(outerA * outerG + outerAA * *d)); ++d;
+							*d = CLAMP255(DIV255(outerA * outerR + outerAA * *d)); ++d;
+						}
+						else {
+							d += 3;
+						}
+					}
+				}
+				//outer circle AA part;
+				else {
+					// outerRad < dis < outerRad + 1
+					rem = dis - outerRad;
+					ca = CLAMP255(int(rem * 0xff));
+					a = 0xff - ca;
 
+					a = DIV255(outerA * a);
+					ca = DIV255(backA * ca);
+					resA = 0xff - DIV255((0xff - a) * (0xff - ca));
 
+					if (resA == 0) {
+						d += 3;
+					}
+					else {
+						byte aa = 0xff - a;
+						resR = (outerR * a * 255 / resA + backR * ca * aa / resA) / 255;
+						resG = (outerG * a * 255 / resA + backG * ca * aa / resA) / 255;
+						resB = (outerB * a * 255 / resA + backB * ca * aa / resA) / 255;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//#include "agg_scanline_boolean_algebra.h"
-//
-//
-//template<class ScanlineGen1,
-//	class ScanlineGen2,
-//	class Scanline1,
-//	class Scanline2,
-//	class Scanline,
-//	class Renderer,
-//	class CombineSpansFunctor>
-//	void omid_sbool_intersect_shapes(ScanlineGen1& sg1, ScanlineGen2& sg2,
-//		Scanline1& sl1, Scanline2& sl2,
-//		Scanline& sl, Renderer& ren,
-//		CombineSpansFunctor combine_spans)
-//{
-//	// Prepare the scanline generators.
-//	// If anyone of them doesn't contain 
-//	// any scanlines, then return.
-//	//-----------------
-//	if (!sg1.rewind_scanlines()) return;
-//	if (!sg2.rewind_scanlines()) return;
-//
-//	// Get the bounding boxes
-//	//----------------
-//	agg::rect_i r1(sg1.min_x(), sg1.min_y(), sg1.max_x(), sg1.max_y());
-//	agg::rect_i r2(sg2.min_x(), sg2.min_y(), sg2.max_x(), sg2.max_y());
-//
-//	// Calculate the intersection of the bounding 
-//	// boxes and return if they don't intersect.
-//	//-----------------
-//	agg::rect_i ir = intersect_rectangles(r1, r2);
-//	if (!ir.is_valid()) return;
-//
-//	// Reset the scanlines and get two first ones
-//	//-----------------
-//	sl.reset(ir.x1, ir.x2);
-//	sl1.reset(sg1.min_x(), sg1.max_x());
-//	sl2.reset(sg2.min_x(), sg2.max_x());
-//	if (!sg1.sweep_scanline(sl1)) return;
-//	if (!sg2.sweep_scanline(sl2)) return;
-//
-//	ren.prepare();
-//
-//	// The main loop
-//	// Here we synchronize the scanlines with 
-//	// the same Y coordinate, ignoring all other ones.
-//	// Only scanlines having the same Y-coordinate 
-//	// are to be combined.
-//	//-----------------
-//	for (;;)
-//	{
-//		while (sl1.y() < sl2.y())
-//		{
-//			if (!sg1.sweep_scanline(sl1)) return;
-//		}
-//		while (sl2.y() < sl1.y())
-//		{
-//			if (!sg2.sweep_scanline(sl2)) return;
-//		}
-//
-//		if (sl1.y() == sl2.y())
-//		{
-//			// The Y coordinates are the same.
-//			// Combine the scanlines, render if they contain any spans,
-//			// and advance both generators to the next scanlines
-//			//----------------------
-//			sbool_intersect_scanlines(sl1, sl2, sl, combine_spans);
-//			if (sl.num_spans())
-//			{
-//				sl.finalize(sl1.y());
-//				ren.render(sl);
-//			}
-//			if (!sg1.sweep_scanline(sl1)) return;
-//			if (!sg2.sweep_scanline(sl2)) return;
-//		}
-//	}
-//}
-//
-//template<class Scanline1,
-//	class Scanline2,
-//	class Scanline,
-//	unsigned CoverShift = agg::cover_shift>
-//	struct omid_sbool_intersect_spans_aa
-//{
-//	enum cover_scale_e
-//	{
-//		cover_shift = CoverShift,
-//		cover_size = 1 << cover_shift,
-//		cover_mask = cover_size - 1,
-//		cover_full = cover_mask
-//	};
-//
-//
-//	void operator () (const typename Scanline1::const_iterator& span1,
-//		const typename Scanline2::const_iterator& span2,
-//		int x, unsigned len,
-//		Scanline& sl) const
-//	{
-//		unsigned cover;
-//		const typename Scanline1::cover_type* covers1;
-//		const typename Scanline2::cover_type* covers2;
-//
-//		// Calculate the operation code and choose the 
-//		// proper combination algorithm.
-//		// 0 = Both spans are of AA type
-//		// 1 = span1 is solid, span2 is AA
-//		// 2 = span1 is AA, span2 is solid
-//		// 3 = Both spans are of solid type
-//		//-----------------
-//		switch ((span1->len < 0) | ((span2->len < 0) << 1))
-//		{
-//		case 0:      // Both are AA spans
-//			covers1 = span1->covers;
-//			covers2 = span2->covers;
-//			if (span1->x < x) covers1 += x - span1->x;
-//			if (span2->x < x) covers2 += x - span2->x;
-//			do
-//			{
-//				cover = *covers1++ * *covers2++;
-//				sl.add_cell(x++,
-//					(cover == cover_full * cover_full) ?
-//					cover_full :
-//					(cover >> cover_shift));
-//			} while (--len);
-//			break;
-//
-//		case 1:      // span1 is solid, span2 is AA
-//			covers2 = span2->covers;
-//			if (span2->x < x) covers2 += x - span2->x;
-//			if (*(span1->covers) == cover_full)
-//			{
-//				sl.add_cells(x, len, covers2);
-//			}
-//			else
-//			{
-//				do
-//				{
-//					cover = *(span1->covers) * *covers2++;
-//					sl.add_cell(x++,
-//						(cover == cover_full * cover_full) ?
-//						cover_full :
-//						(cover >> cover_shift));
-//				} while (--len);
-//			}
-//			break;
-//
-//		case 2:      // span1 is AA, span2 is solid
-//			covers1 = span1->covers;
-//			if (span1->x < x) covers1 += x - span1->x;
-//			if (*(span2->covers) == cover_full)
-//			{
-//				sl.add_cells(x, len, covers1);
-//			}
-//			else
-//			{
-//				do
-//				{
-//					cover = *covers1++ * *(span2->covers);
-//					sl.add_cell(x++,
-//						(cover == cover_full * cover_full) ?
-//						cover_full :
-//						(cover >> cover_shift));
-//				} while (--len);
-//			}
-//			break;
-//
-//		case 3:      // Both are solid spans
-//			cover = *(span1->covers) * *(span2->covers);
-//			sl.add_span(x, len,
-//				(cover == cover_full * cover_full) ?
-//				cover_full :
-//				(cover >> cover_shift));
-//			break;
-//		}
-//	}
-//};
-//
-//void polygon(agg::path_storage& path, double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3) {
-//	path.move_to(x0, y0);
-//	path.line_to(x1, y1);
-//	path.line_to(x2, y2);
-//	path.line_to(x3, y3);
-//	path.line_to(x0, y0);
-//}
-//
-//void rect(agg::path_storage& path, double x0, double y0, double w, double h) {
-//	path.move_to(x0, y0);
-//	path.hline_rel(w);
-//	path.vline_rel(h);
-//	path.hline_rel(-w);
-//	path.vline_rel(-h);
-//}
-//
-//bool intersect(double& x1, double& y1, double& x2, double& y2, double lx1, double ly1, double lx2, double ly2, bool trimA) {
-//	double d21x, d21y, d43x, d43y, d13x, d13y, d, u, v;
-//
-//	d21x = x2 - x1;
-//	d21y = y2 - y1;
-//	d43x = lx2 - lx1;
-//	d43y = ly2 - ly1;
-//	d13x = x1 - lx1;
-//	d13y = y1 - ly1;
-//	d = d43y * d21x - d43x * d21y;
-//	//rays are paralell, no intersection possible
-//	if (fabs(d) < 0.00000001) return false;
-//	u = (d13y * d21x - d13x * d21y) / d;
-//	v = (d13y * d43x - d13x * d43y) / d;
-//
-//	//is position on segment?
-//	bool ints = v >= 0 && v <= 1;
-//	//is position on line?
-//	//bool intl = u >= 0 && u <= 1;
-//
-//	if (ints) {
-//		if (trimA) {
-//			x1 = x1 + v * d21x;
-//			y1 = y1 + v * d21y;
-//		}
-//		else {
-//			x2 = x1 + v * d21x;
-//			y2 = y1 + v * d21y;
-//		}
-//	}
-//
-//	return ints;
-//}
-//
-//void calcCoef(double& c1, double& c2, int side, bool start) {
-//	if (side == 0) c2 = start ? -1 : +1, c1 = +1;
-//	else if (side == 1) c1 = start ? +1 : -1, c2 = +1;
-//	else if (side == 2) c2 = start ? +1 : -1, c1 = -1;
-//	else if (side == 3) c1 = start ? -1 : +1, c2 = -1;
-//}
-//
-//void curve(agg::path_storage& path, double x0, double y0, double x1, double y1, double r1, double r2, double bor1, double bor2, double bor3, int side) {
-//	agg::arc arc;
-//
-//	double xx0, yy0, xx1, yy1, rotate, c1, c2;
-//
-//	if (side == 0) {
-//		xx0 = x0 + bor2;
-//		xx1 = x1 + bor2;
-//		yy0 = y0 - bor1;
-//		yy1 = y1 + bor3;
-//		rotate = agg::pi + agg::pi / 2;
-//	}
-//	else if (side == 1) {
-//		xx0 = x0 + bor1;
-//		xx1 = x1 - bor3;
-//		yy0 = y0 + bor2;
-//		yy1 = y1 + bor2;
-//		rotate = 0;
-//	}
-//	else if (side == 2) {
-//		xx0 = x0 - bor2;
-//		xx1 = x1 - bor2;
-//		yy0 = y0 + bor1;
-//		yy1 = y1 - bor3;
-//		rotate = agg::pi / 2;
-//	}
-//	else if (side == 3) {
-//		xx0 = x0 - bor1;
-//		xx1 = x1 + bor3;
-//		yy0 = y0 - bor2;
-//		yy1 = y1 - bor2;
-//		rotate = agg::pi;
-//	}
-//	else return;
-//
-//	calcCoef(c1, c2, side, true);
-//	arc.init(x0 + r1 * c1, y0 + r1 * c2, r1, r1, agg::pi + rotate, agg::pi + agg::pi / 2 + rotate);
-//	arc.rewind(0);
-//	double x, y, lx, ly;
-//	unsigned cmd = arc.vertex(&x, &y);
-//	bool bint = false;
-//
-//	while (!agg::is_stop(cmd)) {
-//		if (bint) {
-//			if (cmd == agg::path_cmd_line_to)
-//				path.line_to(x, y);
-//		}
-//		else {
-//			if (cmd != agg::path_cmd_move_to) {
-//				bint = intersect(lx, ly, x, y, x0, y0, xx0, yy0, true);
-//				if (bint) {
-//					path.move_to(lx, ly);
-//					continue;
-//				}
-//			}
-//		}
-//		lx = x, ly = y, cmd = arc.vertex(&x, &y);
-//	}
-//
-//	if (!bint) 
-//		path.move_to(lx, ly);
-//
-//	calcCoef(c1, c2, side, false);
-//	arc.init(x1 + r2 * c1, y1 + r2 * c2, r2, r2, agg::pi + agg::pi / 2 + rotate, 0.0 + rotate);
-//	arc.rewind(0);
-//	cmd = arc.vertex(&x, &y);
-//	bint = false;
-//
-//	while (!agg::is_stop(cmd)) {
-//		if (cmd != agg::path_cmd_move_to)
-//			bint = intersect(lx, ly, x, y, x1, y1, xx1, yy1, false);
-//		if (cmd == agg::path_cmd_line_to) path.line_to(x, y);
-//		if (bint) break;
-//		lx = x, ly = y, cmd = arc.vertex(&x, &y);
-//	}
-//
-//	if (side == 0) 
-//		arc.init(x1 + r2 * c1, y1 + r2 * c2, Max(r2 - bor2, 0), Max(r2 - bor3, 0), 0.0 + rotate, agg::pi + agg::pi / 2 + rotate, false);
-//	else if (side == 1)
-//		arc.init(x1 + r2 * c1, y1 + r2 * c2, Max(r2 - bor3, 0), Max(r2 - bor2, 0), 0.0 + rotate, agg::pi + agg::pi / 2 + rotate, false);
-//	else if (side == 2)
-//		arc.init(x1 + r2 * c1, y1 + r2 * c2, Max(r2 - bor2, 0), Max(r2 - bor3, 0), 0.0 + rotate, agg::pi + agg::pi / 2 + rotate, false);
-//	else if (side == 3) 
-//		arc.init(x1 + r2 * c1, y1 + r2 * c2, Max(r2 - bor3, 0), Max(r2 - bor2, 0), 0.0 + rotate, agg::pi + agg::pi / 2 + rotate, false);
-//
-//	arc.rewind(0);
-//	cmd = arc.vertex(&x, &y);
-//	bint = false;
-//	double px, py;
-//	px = lx, py = ly;
-//
-//	while (!agg::is_stop(cmd)) {
-//		if (bint) {
-//			if (cmd == agg::path_cmd_line_to)
-//				path.line_to(x, y);
-//		}
-//		else {
-//			if (cmd != agg::path_cmd_move_to) {
-//				bint = intersect(lx, ly, x, y, x1, y1, xx1, yy1, true);
-//				if (bint) {
-//					path.line_to(lx, ly);
-//					double d = sqrt(pow(px - lx, 2.0) + pow(py - ly, 2.0));
-//					continue;
-//				}
-//			}
-//		}
-//		lx = x, ly = y, cmd = arc.vertex(&x, &y);
-//	}
-//
-//	if (!bint)
-//		path.line_to(lx, ly);
-//
-//	calcCoef(c1, c2, side, true);
-//
-//	if (side == 0)
-//		arc.init(x0 + r1 * c1, y0 + r1 * c2, Max(r1 - bor2, 0), Max(r1 - bor1, 0), agg::pi + agg::pi * 0.5 + rotate, agg::pi + rotate, false);
-//	else if (side == 1)
-//		arc.init(x0 + r1 * c1, y0 + r1 * c2, Max(r1 - bor1, 0), Max(r1 - bor2, 0), agg::pi + agg::pi * 0.5 + rotate, agg::pi + rotate, false);
-//	else if (side == 2)
-//		arc.init(x0 + r1 * c1, y0 + r1 * c2, Max(r1 - bor2, 0), Max(r1 - bor1, 0), agg::pi + agg::pi * 0.5 + rotate, agg::pi + rotate, false);
-//	else if (side == 3)
-//		arc.init(x0 + r1 * c1, y0 + r1 * c2, Max(r1 - bor1, 0), Max(r1 - bor2, 0), agg::pi + agg::pi * 0.5 + rotate, agg::pi + rotate, false);
-//
-//	arc.rewind(0);
-//	cmd = arc.vertex(&x, &y);
-//	bint = false;
-//
-//	while (!agg::is_stop(cmd)) {
-//		if (cmd != agg::path_cmd_move_to)
-//			bint = intersect(lx, ly, x, y, x0, y0, xx0, yy0, false);
-//		if (cmd == agg::path_cmd_line_to) path.line_to(x, y);
-//		if (bint) break;
-//		lx = x, ly = y, cmd = arc.vertex(&x, &y);
-//	}
-//	path.close_polygon();
-//}
-//
-//void Canvas::draw_border(Rect* area, Border& border, BorderRadius& radius) {
-	////double x0, xx0, x1, xx1, x2, xx2, x3, xx3, y0, yy0, y1, yy1, y2, yy2, y3, yy3;
-	//double x1, x2, x3, x4, y1, y2, y3, y4;
-	//
-	//agg::path_storage left, top, right, bottom;
-	//
-	//x1 = 0;
-	//x2 = area->width;
-	//x3 = area->width;
-	//x4 = 0;
-	//
-	//y1 = 0;
-	//y2 = 0;
-	//y3 = area->height;
-	//y4 = area->height;
-	//
-	//pixfmt_bgr pf(sheet, area);
-	//renderer_base ren_base(pf);
-	//renderer_scanline ren(ren_base);
-	//scanline sl_back, sl_result, sl1, sl2, sl_fore;
-	//rasterizer_scanline ras_back;
-	//
-	//agg::rounded_rect rect1(x1, y1, x3, y3, 1);
-	//agg::rounded_rect rect2(x1 + border.left, y1 + border.top, x3 - border.right, y3 - border.bottom, 1);
-	//rect1.radius(radius.lt, radius.rt, radius.rb, radius.lb);
-	//rect2.radius(radius.lt, radius.rt, radius.rb, radius.lb);
-	//rect1.normalize_radius();
-	//rect2.normalize_radius();
-	//ras_back.add_path(rect1);
-	//ras_back.add_path(rect2);
-	//ras_back.filling_rule(agg::filling_rule_e::fill_even_odd);
-	//ren.color(Color(0x7f, 0, 0x7f));
-	////agg::render_scanlines(ras_back, sl_back, ren);
-	//agg::rasterizer_scanline_aa<> ras_fore;
-	//ras_fore.filling_rule(agg::fill_even_odd);
-	//omid_sbool_intersect_spans_aa<scanline, scanline, scanline> combine_functor;
-	//
-	//ras_fore.reset();
-	//
-	//double rx1, ry1, rx2, ry2, rx3, ry3, rx4, ry4;
-	//
-	//rx1 = radius.lt;
-	//ry1 = radius.lt;
-	//rx2 = radius.rt;
-	//ry2 = radius.rt;
-	//rx3 = radius.rb;
-	//ry3 = radius.rb;
-	//rx4 = radius.lb;
-	//ry4 = radius.lb;
-	//
-	//double dx, dy, k, t;
-	//dx = std::fabs(y3 - y1);
-	//dy = std::fabs(x3 - x1);
-	//k = 1.0;
-	//
-	//t = dx / (rx1 + rx2); if (t < k) k = t;
-	//t = dx / (rx3 + rx4); if (t < k) k = t;
-	//t = dy / (ry1 + ry2); if (t < k) k = t;
-	//t = dy / (ry3 + ry4); if (t < k) k = t;
-	//
-	//if (k < 1.0)
-	//{
-	//	rx1 *= k; ry1 *= k; rx2 *= k; ry2 *= k;
-	//	rx3 *= k; ry3 *= k; rx4 *= k; ry4 *= k;
-	//}
-	//
-	//curve(top, x1, y1, x2, y2, rx1, rx2, border.left, border.top, border.right, 1);
-	//curve(right, x2, y2, x3, y3, rx2, rx3, border.top, border.right, border.bottom, 2);
-	//curve(bottom, x3, y3, x4, y4, rx3, rx4, border.right, border.bottom, border.left, 3);
-	//curve(left, x4, y4, x1, y1, rx4, rx1, border.bottom, border.left, border.top, 0);
-	//
-	//double wd = 1;
-	//agg::conv_stroke<agg::path_storage> cvl(left);
-	//cvl.width(wd);
-	//ras_fore.add_path(cvl);
-	//render_scanlines(ras_fore, sl, pf, border.leftColor);
-	//
-	//agg::conv_stroke<agg::path_storage> cvt(top);
-	//cvt.width(wd);
-	//ras_fore.add_path(cvt);
-	//render_scanlines(ras_fore, sl, pf, border.topColor);
-	//
-	//agg::conv_stroke<agg::path_storage> cvr(right);
-	//cvr.width(wd);
-	//ras_fore.add_path(cvr);
-	//render_scanlines(ras_fore, sl, pf, border.rightColor);
-	//
-	//agg::conv_stroke<agg::path_storage> cvb(bottom);
-	//cvb.width(wd);
-	//ras_fore.add_path(cvb);
-	//render_scanlines(ras_fore, sl, pf, border.botColor);
-	//
-	//omid_sbool_intersect_shapes(ras_back, ras_fore, sl1, sl2, sl_result, ren, combine_functor);
-	//
-	//ras_fore.reset();
-	//ras_fore.add_path(top);
-	//ren.color(border.topColor);
-	//omid_sbool_intersect_shapes(ras_back, ras_fore, sl1, sl2, sl_result, ren, combine_functor);
-	//
-	//ras_fore.reset();
-	//ras_fore.add_path(right);
-	//ren.color(border.rightColor);
-	//omid_sbool_intersect_shapes(ras_back, ras_fore, sl1, sl2, sl_result, ren, combine_functor);
-	//
-	//ras_fore.reset();
-	//ras_fore.add_path(bottom);
-	//ren.color(border.botColor);
-	//omid_sbool_intersect_shapes(ras_back, ras_fore, sl1, sl2, sl_result, ren, combine_functor);
-//}
+						if (resA == 0xff) {
+							*d++ = resB;
+							*d++ = resG;
+							*d++ = resR;
+						}
+						else if (resA > 0) {
+							resAA = 0xff - resA;
+							*d = CLAMP255(DIV255(resA * resB + resAA * *d)); ++d;
+							*d = CLAMP255(DIV255(resA * resG + resAA * *d)); ++d;
+							*d = CLAMP255(DIV255(resA * resR + resAA * *d)); ++d;
+						}
+					}
+				}
+			}
+			// empty outer circle
+			else {
+				if (backA == 0xff) {
+					*d++ = backB;
+					*d++ = backG;
+					*d++ = backR;
+				}
+				else if (backA > 0) {
+					*d = CLAMP255(DIV255(backA * backB + backAA * *d)); ++d;
+					*d = CLAMP255(DIV255(backA * backG + backAA * *d)); ++d;
+					*d = CLAMP255(DIV255(backA * backR + backAA * *d)); ++d;
+				}
+				else {
+					d += 3;
+				}
+			}
+		}
+	}
+}

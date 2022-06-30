@@ -1,68 +1,71 @@
 #include "container.h"
-#include "oui_radio.h"
-#include "oui_group.h"
 #include "oui_uix.h"
-#include "oui_button.h"
-#include "oui_check.h"
-#include "oui_text.h"
-#include "oui_number.h"
-#include "oui_menu.h"
+#include "oui_scroll.h"
+#include "oui_stack.h"
+#include "oui_uix.h"
+#include "UIDOpenFile.h"
+#include "UIDSaveFile.h"
 
-UIGroup group;
-UIRadio radio1, radio2, radio3;
-UICheck chk1, chk2, chk3;
-//UIText txt;
-//UINumber num;
-UIButton btn1, btn2;
+UIStack list;
+UIButton btnOpen;
 
 void UIContainer::on_init()
 {
 	int l = 100,
-		t = 100;
+		t = 100,
+		w = 340,
+		h = 200;
 
-	/*uix->bDrawBoxModel = 0;*/
+	
+	btnOpen.create(l, t, 100, 30, this);
+	btnOpen.set_text(L"Open...");
 
-	/*group.create(l, t + 60, 100, 100, this);
-	group.overflow = Overflow::hidden;
-	radio1.create(0, 0, 300, 14, &group);
-	radio2.create(0, 30, 300, 14, &group);
-	radio3.create(0, 60, 300, 14, &group);
-	radio1.set_text(L"Radio 1");
-	radio2.set_text(L"Radio 2");
-	radio3.set_text(L"Radio 3");*/
+	/*dlg.create(w, h, this, DialogButtonSet::OK_Cancel);
+	dlg.set_default_button(DialogButtonId::OK);
+	dlg.set_background_color(Color("#ddd"));
+	dlg.show_window();*/
 
-	btn1.create(100, 100, 100, 30, this);
-	btn2.create(100, 140, 100, 30, this);
+	//list.create(l, t, 260, 200, this);
+	////list.mode = UIStackMode::STACKVER;
 
-	btn1.menu = new UIMenu();
-	btn2.menu = new UIMenu();
+	//for (int i = 0; i < 20; ++i) {
+	//	auto button = new UIButton();
+	//	button->create(0, 0, 100, 40, &list);
+	//	button->set_text(L"button");
+	//}
 
-	btn1.menu->create(0, 0, 100, 100, &btn1);
-	btn2.menu->create(300, 100, 100, 100, &btn2);
+	//list.reset_size();
 
-	btn1.menu->menuActivationMode = MenuActivationMode::PointerDown;
-	btn2.menu->menuActivationMode = MenuActivationMode::PointerDown;
-	btn1.menu->menuType = MenuType::Solid;
-	btn2.menu->menuType = MenuType::Solid;
-
-	btn1.menu->border.set(1, Colors::purple);
-	btn2.menu->border.set(1, Colors::purple);
-
-	/*txt.create(100, 100, 100, 15, this);
-	txt.set_text(L"000");
-
-	num.create(100, 200, 100, 18, this);
-	num.set_text(L"100");*/
-
-	/*chk1.create(l, t, 300, 14, this);
-	chk1.set_text(L"CheckBox 1");*/
+	OUITheme::primary.set("#eee");
+	OUITheme::secondary.set("#ddd");
+	OUITheme::text.set("#444");
+	uix->apply_theme_all();
 }
 
 
 void UIContainer::process_event(OUI* element, uint32_t message, uint64_t param, bool bubbleUp) {
-	if (message == Event::Select) {
-		element->select(true);
-	} else if (message == Event::Deselect) {
-		element->select(false);
+	if (element == &btnOpen && message == Event::Click) {
+		UIDSaveFile dlgSave;
+
+		dlgSave.set_default_extention(L"gif");
+		dlgSave.set_file_name(L"foo");
+
+		dlgSave.set_default_dir(L"C:\\dev");
+		dlgSave.set_directory(L"C:\\users\\omid\\pictures");
+		dlgSave.set_type_index(1);
+		dlgSave.set_file_types({
+			{ L"JPEG", L"*.jpg;*.jpeg" },
+			{ L"PNG", L"*.png" },
+			{ L"BMP", L"*.bmp" },
+			{ L"GIF", L"*.gif" },
+			{ L"All", L"*.*" },
+			});
+		if (dlgSave.show_window(this) == 0) {
+			auto fileNames = dlgSave.get_selected_file_names();
+			std::wstring res = L"";
+			for (auto fileName : fileNames)
+				res += fileName + L" ";
+			MessageBoxW(NULL, res.c_str(), L"File Path", MB_OK);
+		}
 	}
 }

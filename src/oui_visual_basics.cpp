@@ -83,6 +83,10 @@ void Spacing::reset() {
 	top = right = bottom = left = 0;
 }
 
+bool Spacing::is_empty() {
+	return top <= 0 && left <= 0 && right <= 0 && bottom <= 0;
+}
+
 void Spacing::set(int all) {
 	this->top = all;
 	this->right = all;
@@ -111,13 +115,15 @@ void Spacing::set(int top, int right, int bottom, int left) {
 	this->left = left;
 }
 
+bool BorderRadius::is_empty() {
+	return ocom::is_zerod(lt) && ocom::is_zerod(lt) && ocom::is_zerod(lt) && ocom::is_zerod(lt);
+}
+
 void BorderRadius::reset() {
-	bset = false;
 	lt = rt = rb = lb = 0.0;
 }
 
 void BorderRadius::set(double lt, double rt, double rb, double lb) {
-	bset = true;
 	this->lt = lt;
 	this->rt = rt;
 	this->rb = rb;
@@ -125,7 +131,6 @@ void BorderRadius::set(double lt, double rt, double rb, double lb) {
 }
 
 void BorderRadius::set(int topLeft, int topRightBottomLeft, int bottomRight) {
-	bset = true;
 	this->lt = topLeft;
 	this->rt = topRightBottomLeft;
 	this->lb = topRightBottomLeft;
@@ -133,7 +138,6 @@ void BorderRadius::set(int topLeft, int topRightBottomLeft, int bottomRight) {
 }
 
 void BorderRadius::set(int all) {
-	bset = true;
 	this->lt = all;
 	this->rt = all;
 	this->rb = all;
@@ -141,15 +145,10 @@ void BorderRadius::set(int all) {
 }
 
 void BorderRadius::set(int topLeftBottomRight, int topRightBottomLeft) {
-	bset = true;
 	this->lt = topLeftBottomRight;
 	this->rb = topLeftBottomRight;
 	this->rt = topRightBottomLeft;
 	this->lb = topRightBottomLeft;
-}
-
-void BorderRadius::remove() {
-	reset();
 }
 
 Border::Border() {

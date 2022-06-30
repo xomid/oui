@@ -9,11 +9,11 @@ class OUI_API OUI
 {
 public:
 	static int init();
-
-	OUI();
-	~OUI();
+	static void destroy();
 	static OUI* find_element(OUI* curr, int x, int y);
 	static byte* blur_stack;
+
+	OUI();
 
 	std::string string_id;
 	uint32_t id;
@@ -125,4 +125,7 @@ public:
 	virtual void move_fast(int x, int y);
 	virtual void move_fast(int x, int y, int width, int height);
 	virtual void move_page(int left, int top);
+	virtual void move_page_ver(int top);
+	virtual void move_page_hor(int left);
+	virtual void apply_theme(bool bInvalidate = true);
 };

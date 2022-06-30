@@ -86,6 +86,49 @@ int SlotCacher::init() {
 	return (defaultFont == NULL ? 1 : 0);
 }
 
+void SlotCacher::destroy() {
+	if (lib) {
+		FT_Done_FreeType(lib);
+		lib = NULL;
+	}
+
+	if (fonts) {
+		for (auto it : *fonts) {
+			FT_Done_Face(it.second);
+		}
+		delete fonts;
+		fonts = NULL;
+	}
+
+	if (table) {
+		for (auto it : *table) {
+			auto& row = it.second;
+
+			for (auto it : *row) {
+				auto cache = it.second;
+
+				hb_font_destroy(cache->font);
+				hb_buffer_destroy(cache->buffer);
+
+				for (auto it : cache->slots) {
+					auto& slot = it.second;
+					delete[] slot->outline.points;
+					delete[] slot->outline.contours;
+					delete[] slot->outline.tags;
+					delete[] slot->bitmap.buffer;
+					delete slot;
+				}
+
+				delete cache;
+			}
+
+			delete row;
+		}
+		delete table;
+		table = NULL;
+	}
+}
+
 FT_Face SlotCacher::add_font(std::wstring& name, std::wstring path) {
 	FT_Face face;
 	if (!check_ready()) return NULL;
