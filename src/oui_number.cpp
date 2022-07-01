@@ -152,6 +152,8 @@ void UINumber::text_to_num() {
 void UINumber::num_to_text() {
 	auto str = number.str();
 	text = ocom::to_wstring(str);
+	set_index((int)this->text.length());
+	reset_selection();
 	invalidate();
 }
 

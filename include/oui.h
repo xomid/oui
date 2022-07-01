@@ -66,6 +66,7 @@ public:
 	virtual void focus();
 	virtual void get_content_area(Rect& rc);
 	virtual void get_parent_position(Rect& rc);
+	virtual void get_abs_content_area(Rect& rc);
 	virtual void hover(bool bHover);
 	virtual void invalidate();
 	virtual void kill_timer(uint32_t ntimer);

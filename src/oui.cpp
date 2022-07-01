@@ -783,10 +783,14 @@ uint32_t OUI::get_id() {
 	return id;
 }
 
+void OUI::get_abs_content_area(Rect& rect) {
+	rect.set(contentArea);
+	rect.shift(area.left, area.top);
+}
+
 void OUI::get_parent_position(Rect& rect) {
 	if (parent) {
-		rect.set(parent->contentArea);
-		rect.shift(parent->area.left, parent->area.top);
+		parent->get_abs_content_area(rect);
 	}
 }
 

@@ -201,3 +201,19 @@ void UIRadio::on_mouse_up(int x, int y, uint32_t flags) {
 void UIRadio::on_dbl_click(int x, int y, uint32_t flags) {
 	on_mouse_down(x, y, flags);
 }
+
+void UIRadio::on_resize(int width, int height) {
+	UILink::on_resize(width, height);
+	int shapeH = CLAMP3(8, boxModel.height, 20), shapeW = shapeH;
+	shape.resize(shapeW, shapeH);
+	if (type == UIRadioType::Radio) {
+		padding.left = shapeLeft + shapeW + shapeMargin;
+	}
+	invalidate_shape();
+}
+
+void UIRadio::apply_theme(bool bInvalidate) {
+	set_background_color(OUITheme::primary);
+	set_color(OUITheme::text);
+	if (bInvalidate) invalidate();
+}

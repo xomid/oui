@@ -42,7 +42,7 @@ void UISlide::calc_handle_pos(RangedFloat& number, void* handle) {
 		fValue = fMin = 0;
 		fMax = 1;
 	}
-	calc_handle_pos(handle, fValue / (fMax - fMin));
+	calc_handle_pos(handle, (fValue - fMin) / (fMax - fMin));
 }
 
 void UISlide::set_gradient_func(GradientFunc gradFunc) {

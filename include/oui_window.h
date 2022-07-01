@@ -30,6 +30,7 @@ public:
 	virtual void close(uint32_t);
 	OUI* get_draggable(int x, int y, uint32_t flags) override;
 	void get_content_area(Rect& rc) override;
+	void get_abs_content_area(Rect& rc) override;
 	void on_update() override;
 	void on_mouse_move(int x, int y, uint32_t flags) override;
 	void on_mouse_down(int x, int y, uint32_t flags) override;
@@ -60,4 +61,5 @@ public:
 	void process_event(OUI* element, uint32_t message, uint64_t param, bool bubbleUp) override;
 	void set_default_button(uint32_t buttonId);
 	UIButton* get_button(uint32_t id);
+	void on_resize(int width, int height) override;
 };

@@ -52,9 +52,16 @@ OUI* UIWindow::create(int left, int top, int width, int height, OUI* caller, Win
 }
 
 void UIWindow::get_content_area(Rect& rc) {
-	rc.set(1, 1, area.width - 2, area.height - 2);
-	rc.top += InitialValues::titleBarHeight;
+	OUI::get_content_area(rc);
 	rc.height -= InitialValues::titleBarHeight;
+}
+
+void UIWindow::get_abs_content_area(Rect& rc) {
+	rc.left = contentArea.left;
+	rc.top = contentArea.top + InitialValues::titleBarHeight;
+	rc.width = contentArea.width;
+	rc.height = contentArea.height - InitialValues::titleBarHeight;
+	rc.shift(area.left, area.top);
 }
 
 void UIWindow::on_update() {
@@ -204,17 +211,16 @@ OUI* UIDialog::create(int width, int height, OUI* caller, size_t buttonCount) {
 	int brd = 4, fontSize = 15, w = 100, h = 34;
 	int l, t, mar = 15, midmar = 8;
 	int totalW = int(buttonCount) * w + 2 * mar + Max(int(buttonCount) - 1, 0) * midmar;
+	height = Max(height, 2 * InitialValues::titleBarHeight + 2 * mar);
 
 	height = Max(height, 2 * InitialValues::titleBarHeight + 2 * mar);
 	width = Max(totalW, width);
-
 	UIWindow::create(0, 0, width, height, caller, WindowType::Dialog);
 	set_background_color(Color("#2c2c2c"));
-	width = boxModel.width;
 
 	Color normalBack("#393939"), normalColor(0xff, 0xff, 0xff);
-	l = width - mar - int(buttonCount) * w - (int(buttonCount) - 1) * midmar;
-	t = height - h - mar - InitialValues::titleBarHeight;
+	l = t = 0;
+	w = h = 10;
 
 	iterateI(buttonCount) {
 		UIButton* btn = new UIButton();
@@ -224,12 +230,26 @@ OUI* UIDialog::create(int width, int height, OUI* caller, size_t buttonCount) {
 		btn->set_background_color(normalBack);
 		btn->set_color(normalColor);
 		btn->set_font_size(fontSize);
-		l += w + midmar;
 		buttonIds[btn] = 0;
 		buttons.push_back(btn);
 	}
 
 	return this;
+}
+
+void UIDialog::on_resize(int width, int height) {
+	int w = 100, h = 34;
+	int l, t, midmar = 8;
+	auto buttonCount = (int)buttons.size();
+	int totalW = int(buttonCount) * w + Max(int(buttonCount) - 1, 0) * midmar + padding.left + padding.right;
+	l = contentArea.width - int(buttonCount) * w - (int(buttonCount) - 1) * midmar;
+	t = contentArea.height - h;
+
+	iterateV(buttons) {
+		auto btn = *it;
+		btn->move(l, t, w, h);
+		l += w + midmar;
+	}
 }
 
 OUI* UIDialog::create(int width, int height, OUI* caller, std::initializer_list<ButtonName> list) {

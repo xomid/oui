@@ -17,6 +17,7 @@ protected:
 public:
 	UIRadio();
 
+	void on_resize(int width, int height) override;
 	OUI* create(int left, int top, int width, int height, OUI* parent, bool bAddToParent = true) override;
 	void on_click(int x, int y, uint32_t param) override;
 	bool select(bool bSelect) override;
@@ -28,6 +29,7 @@ public:
 	void on_mouse_down(int x, int y, uint32_t flags) override;
 	void on_mouse_up(int x, int y, uint32_t flags) override;
 	void on_dbl_click(int x, int y, uint32_t flags) override;
+	void apply_theme(bool bInvalidate) override;
 	void gen_circle_shape(Sheet& sheet, Color back, Color border, Color normalBorder);
 	virtual void invalidate_shape();
 };
