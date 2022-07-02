@@ -21,6 +21,13 @@ void draw_X_icon(Canvas& canvas, Rect& rect, Color color, double width, byte opa
 	rasInd.render(false);
 }
 
+void UIWindow::show_buttons(bool minimize, bool maximize, bool close) {
+	bShowMinBtn = minimize;
+	bShowMaxBtn = maximize;
+	bShowCloseBtn = close;
+	invalidate();
+}
+
 void UIWindow::apply_theme(bool bInvalidate) {
 	set_background_color(OUITheme::primary);
 	set_color(OUITheme::text);
@@ -47,85 +54,97 @@ OUI* UIWindow::create(int left, int top, int width, int height, OUI* caller, Win
 	this->type = type;
 	this->caller = caller;
 	uix->add_window(this);
+	show_title_bar(true);
+	show_buttons(false, false, true);
 
 	return this;
 }
 
-void UIWindow::get_content_area(Rect& rc) {
-	OUI::get_content_area(rc);
-	rc.height -= InitialValues::titleBarHeight;
+void UIWindow::show_title_bar(bool bShow) {
+	bShowTitleBar = bShow;
+	if (bShowTitleBar) contextPadding.set(InitialValues::titleBarHeight, 0, 0);
+	else contextPadding.set(0);
+	reset_size();
 }
 
-void UIWindow::get_abs_content_area(Rect& rc) {
-	rc.left = contentArea.left;
-	rc.top = contentArea.top + InitialValues::titleBarHeight;
-	rc.width = contentArea.width;
-	rc.height = contentArea.height - InitialValues::titleBarHeight;
-	rc.shift(area.left, area.top);
+void UIWindow::get_title_bar_area(Rect& rcTitleBar) {
+	rcTitleBar.set(-contextPadding.left, -contextPadding.top, area.width, InitialValues::titleBarHeight);
+}
+
+void UIWindow::update_position() {
+	OUI::update_position();
+	get_title_bar_area(titleBarArea);
 }
 
 void UIWindow::on_update() {
 	OUI::on_update();
-	int L = 1, T = 1, w = area.width - 2, h = InitialValues::titleBarHeight;
-	Rect rc(L, T, w, h);
-	Spacing pad;
-	Rect rcc;
-	Border bord;
-	Color cr2 = btnCloseColor;
+	canvas.area = &area;
 
-	pad.set(11);
-	rcc.set(L + w - icw, T, icw, ich);
-	
-	if (!btnCloseHover && btnCloseDown)
-		int t = 0;
+	if (bShowTitleBar) {
+		int L = 1, T = 1, w = titleBarArea.width - 2, h = titleBarArea.height;
 
-	if ((btnCloseHover && !btnCloseDown) || (btnCloseDown && btnCloseHover)) {
-		canvas.sheet->setclip(&absContentShape, 0xff);
-		Color crCloseDown, crCloseHover(0xff, 0, 0);
-		crCloseDown.brightness(&crCloseHover, +100);
-		canvas.clear(&rcc, (btnCloseHover && !btnCloseDown) ? &crCloseHover : &crCloseDown);
-		canvas.sheet->unclip();
-	}
+		Spacing pad;
+		Rect rcc;
+		Border bord;
+		Color cr2 = btnCloseColor;
+		int btnsW = (int(bShowMinBtn) + int(bShowMaxBtn) + int(bShowCloseBtn)) * icw;
 
-	rcc.shrink(pad);
-	draw_X_icon(canvas, rcc, ((btnCloseHover && !btnCloseDown) || (btnCloseDown && btnCloseHover)) ?
-		Color(0xff, 0xff, 0xff) : cr2, btnCloseHover && !btnCloseDown ? 1 : .8, opacity);
+		if (bShowCloseBtn) {
+			pad.set(11);
+			rcc.set(L + w - icw, T, icw, ich);
 
-	if (type != WindowType::Dialog) {
-		canvas.art.strokeColor = cr2;
-		if ((btnMaxHover && !btnMaxDown) || (btnMaxDown && btnMaxHover)) {
-			rcc.set(L + w - 2 * icw, T, icw, ich);
-			canvas.clear(&rcc, btnMaxDown && btnMaxHover ? &crDown : &crHover);
+			if ((btnCloseHover && !btnCloseDown) || (btnCloseDown && btnCloseHover)) {
+				canvas.sheet->setclip(&absContentShape, 0xff);
+				Color crCloseDown, crCloseHover(0xff, 0, 0);
+				crCloseDown.brightness(&crCloseHover, +100);
+				canvas.clear(&rcc, (btnCloseHover && !btnCloseDown) ? &crCloseHover : &crCloseDown);
+				canvas.sheet->unclip();
+			}
+
+			rcc.shrink(pad);
+
+			draw_X_icon(canvas, rcc, ((btnCloseHover && !btnCloseDown) || (btnCloseDown && btnCloseHover)) ?
+				Color(0xff, 0xff, 0xff) : cr2, btnCloseHover && !btnCloseDown ? 1 : .8, opacity);
 		}
-		bord.set(1, cr2);
-		rcc.set(L + w - 2 * icw + (icw - ich) / 2, T, ich, ich);
-		rcc.shrink(pad);
-		canvas.draw_box(rcc, bord, opacity);
 
-		rcc.set(L + w - 3 * icw, T, icw, ich);
-		if ((btnMinHover && !btnMinDown) || (btnMinDown && btnMinHover))
-			canvas.clear(&rcc, btnMinDown && btnMinHover ? &crDown : &crHover);
-		int minBW = int(.3 * ich);
-		int l = (rcc.left + (icw - minBW) / 2);
-		canvas.draw_horizontal_line(T + h / 2, l, l + minBW, 1);
+		if (type != WindowType::Dialog) {
+			canvas.art.strokeColor = cr2;
+			if ((btnMaxHover && !btnMaxDown) || (btnMaxDown && btnMaxHover)) {
+				rcc.set(L + w - 2 * icw, T, icw, ich);
+				canvas.clear(&rcc, btnMaxDown && btnMaxHover ? &crDown : &crHover);
+			}
+			bord.set(1, cr2);
+			rcc.set(L + w - 2 * icw + (icw - ich) / 2, T, ich, ich);
+			rcc.shrink(pad);
+			canvas.draw_box(rcc, bord, opacity);
 
-		pad.set(8);
-		canvas.render_svg(svgApp, L, T, icw, ich, opacity, &pad);
+			rcc.set(L + w - 3 * icw, T, icw, ich);
+			if ((btnMinHover && !btnMinDown) || (btnMinDown && btnMinHover))
+				canvas.clear(&rcc, btnMinDown && btnMinHover ? &crDown : &crHover);
+			int minBW = int(.3 * ich);
+			int l = (rcc.left + (icw - minBW) / 2);
+			canvas.draw_horizontal_line(T + h / 2, l, l + minBW, 1);
 
-		rcc.set(L + ich, T, w - 4 * icw, h);
+			pad.set(8);
+			canvas.render_svg(svgApp, L, T, icw, ich, opacity, &pad);
+
+			rcc.set(L + ich, T, w - btnsW, h);
+		}
+		else rcc.set(L + 16, T, w - btnsW, h);
+
+		canvas.art.alignX = Align::LEFT;
+		canvas.art.alignY = Align::CENTER;
+		canvas.set_color(cr2);
+		canvas.draw_text16(title, rcc);
 	}
-	else rcc.set(L + 16, T, w - 4 * icw, h);
 
-	canvas.art.alignX = Align::LEFT;
-	canvas.art.alignY = Align::CENTER;
-	canvas.set_color(cr2);
-	canvas.draw_text16(title, rcc);
+	canvas.area = &contextArea;
 }
 
 void UIWindow::on_mouse_move(int x, int y, uint32_t flags) {
 	int L = 1, T = 1, w = area.width - 2, h = InitialValues::titleBarHeight;
 	Rect rcClose(L + w - icw, T, icw, ich);
-	btnCloseHover = rcClose.is_inside(x, y);
+	btnCloseHover = bShowCloseBtn ? rcClose.is_inside(x, y) : false;
 	Rect rcMax(L + w - 2 * icw, T, icw, ich);
 	btnMaxHover = rcMax.is_inside(x, y);
 	Rect rcMin(L + w - 3 * icw, T, icw, ich);
@@ -144,7 +163,7 @@ void UIWindow::on_mouse_down(int x, int y, uint32_t flags) {
 
 void UIWindow::on_mouse_up(int x, int y, uint32_t flags) {
 	if (caller) {
-		if (btnCloseDown && btnCloseHover) {
+		if (btnCloseDown && btnCloseHover && bShowCloseBtn) {
 			close(DialogButtonId::Cancel);
 		}
 	}
@@ -211,9 +230,8 @@ OUI* UIDialog::create(int width, int height, OUI* caller, size_t buttonCount) {
 	int brd = 4, fontSize = 15, w = 100, h = 34;
 	int l, t, mar = 15, midmar = 8;
 	int totalW = int(buttonCount) * w + 2 * mar + Max(int(buttonCount) - 1, 0) * midmar;
-	height = Max(height, 2 * InitialValues::titleBarHeight + 2 * mar);
+	height = Max(height, InitialValues::titleBarHeight);
 
-	height = Max(height, 2 * InitialValues::titleBarHeight + 2 * mar);
 	width = Max(totalW, width);
 	UIWindow::create(0, 0, width, height, caller, WindowType::Dialog);
 	set_background_color(Color("#2c2c2c"));
@@ -264,9 +282,20 @@ OUI* UIDialog::create(int width, int height, OUI* caller, std::initializer_list<
 }
 
 OUI* UIDialog::create(int width, int height, OUI* caller, DialogButtonSet buttonSet) {
-	int buttonCount =
-		buttonSet == DialogButtonSet::Yes_No_Cancel ? 3 :
-		buttonSet == DialogButtonSet::OK ? 1 : 2;
+	int buttonCount = 0;
+
+	switch (buttonSet) {
+	case DialogButtonSet::OK:
+		buttonCount = 1;
+		break;
+	case DialogButtonSet::OK_Cancel:
+	case DialogButtonSet::Yes_No:
+		buttonCount = 2;
+		break;
+	case DialogButtonSet::Yes_No_Cancel:
+		buttonCount = 3;
+		break;
+	}
 
 	create(width, height, caller, buttonCount);
 
@@ -303,6 +332,8 @@ OUI* UIDialog::create(int width, int height, OUI* caller, DialogButtonSet button
 		yes->set_text(L"Yes");
 		no->set_text(L"No");
 		cancel->set_text(L"Cancel");
+		break;
+	default:
 		break;
 	}
 

@@ -382,6 +382,7 @@ int Sheet::create(int width, int height, int NBPP /*  Number of bytes per pixel 
 int Sheet::clone(const Sheet* source) {
 	if (!source || source->is_useless())
 		return 1;
+	free();
 
 	sw = w = source->w;
 	sh = h = source->h;
@@ -413,7 +414,6 @@ int Sheet::copy(const Sheet* source) {
 
 	return 0;
 }
-
 
 void Sheet::clear_solid(Color& color) {
 	if (!data || !w || !h || !nbpp) return;

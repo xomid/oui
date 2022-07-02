@@ -49,6 +49,12 @@ void OUI::destroy() {
 	SlotCacher::destroy();
 }
 
+OUI::~OUI() {
+	on_destroy();
+	if (scrollX) delete scrollX;
+	if (scrollY) delete scrollY;
+}
+
 OUI::OUI() {
 	Color c;
 	menu = NULL;
@@ -81,15 +87,19 @@ OUI::OUI() {
 	boxModel.reset();
 	padding.reset();
 	border.reset();
+	contextPadding.set(0);
 	area.set(0, 0, 0, 0);
+	contextArea.set(0, 0, 0, 0);
 	borderRadius.reset();
 	canvas.set_line_height(InitialValues::lineHeight);
-	canvas.set_area(&area);
+	canvas.set_area(&contextArea);
 	canvas.add_font(fontName = InitialValues::fontName, L"C:\\dev\\fonts\\SegoeUIVF.ttf");
 	canvas.load_handle(fontName, fontSize = InitialValues::fontSize);
 }
 
 void OUI::on_update() {
+	canvas.area = &area;
+
 	if (outsetBoxShadows.size()) {
 		canvas.bit_blt(outsetBoxShadowSheet,
 			outsetBoxShadowSheet.offset.x,
@@ -115,6 +125,8 @@ void OUI::on_update() {
 		canvas.bit_blt(insetBoxShadowSheet,
 			rc.left, rc.top, insetBoxShadowSheet.w, insetBoxShadowSheet.h, 0, 0, true);
 	}
+
+	canvas.area = &contextArea;
 }
 
 void OUI::move_shape() {
@@ -592,10 +604,30 @@ OUI* OUI::create(int left, int top, int width, int height, OUI* parent, bool bAd
 	return this;
 }
 
+void OUI::get_parent_position(Rect& rect) {
+	if (parent) {
+		rect.set(parent->contentArea);
+		rect.shift(parent->contextArea.left, parent->contextArea.top);
+	}
+}
+
+void OUI::get_content_area(Rect& rcContent) {
+	Spacing& pad = padding;
+	Border& bor = border;
+	rcContent.set(pad.left + bor.left, pad.top + bor.top,
+		area.width - pad.left - pad.right - bor.left - bor.right - contextPadding.left - contextPadding.right,
+		area.height - pad.top - pad.bottom - bor.top - bor.bottom - contextPadding.top - contextPadding.bottom);
+}
+
 void OUI::update_position() {
 	Rect rect;
 	get_parent_position(rect);
 	area.set(boxModel.left + rect.left, boxModel.top + rect.top, boxModel.width, boxModel.height);
+	contextArea.set(area);
+	contextArea.left += contextPadding.left;
+	contextArea.top += contextPadding.top;
+	contextArea.width -= contextPadding.left + contextPadding.right;
+	contextArea.height -= contextPadding.top + contextPadding.bottom;
 	move_shape();
 
 	iterateV(elements) {
@@ -701,13 +733,6 @@ void OUI::measure_size(int* w, int* h) {
 	if (h) *h = area.height;
 }
 
-void OUI::get_content_area(Rect& rc) {
-	Spacing& pad = padding;
-	Border& bor = border;
-	rc.set(pad.left + bor.left, pad.top + bor.top, area.width - pad.left - pad.right - bor.left - bor.right,
-		area.height - pad.top - pad.bottom - bor.top - bor.bottom);
-}
-
 void OUI::set_parent(OUI* parent) {
 	if (!parent || this->parent == parent) return;
 	this->parent = parent;
@@ -781,17 +806,6 @@ void OUI::set_id(uint32_t newId) {
 
 uint32_t OUI::get_id() {
 	return id;
-}
-
-void OUI::get_abs_content_area(Rect& rect) {
-	rect.set(contentArea);
-	rect.shift(area.left, area.top);
-}
-
-void OUI::get_parent_position(Rect& rect) {
-	if (parent) {
-		parent->get_abs_content_area(rect);
-	}
 }
 
 void OUI::focus() {
@@ -947,9 +961,9 @@ void OUI::add_box_shadow(bool inset, int offsetX, int offsetY, int blur, int spr
 
 void OUI::clear_box_shadow() {
 	for (auto& t : insetBoxShadows)
-		t.sheet.destroy();
+		t.sheet.free();
 	for (auto& t : outsetBoxShadows)
-		t.sheet.destroy();
+		t.sheet.free();
 
 	insetBoxShadows.clear();
 	outsetBoxShadows.clear();

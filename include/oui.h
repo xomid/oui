@@ -14,6 +14,7 @@ public:
 	static byte* blur_stack;
 
 	OUI();
+	~OUI();
 
 	std::string string_id;
 	uint32_t id;
@@ -23,7 +24,7 @@ public:
 	UIScroll* scrollX, * scrollY;
 	UIX* uix;
 	Canvas canvas;
-	Rect area, contentArea;
+	Rect area, contextArea, contentArea;
 	std::wstring text, fontName;
 	Sheet* godSheet;
 	int lockerID, transparenElementsSize, zIndex, fontSize;
@@ -34,7 +35,7 @@ public:
 	ShapeStorage shape, contentShape, absContentShape;
 	Border border;
 	BorderRadius borderRadius;
-	Spacing margin, padding;
+	Spacing margin, padding, contextPadding;
 	Overflow overflow;
 	BoxModel boxModel;
 	UIFloatType floatType;
@@ -64,9 +65,8 @@ public:
 	virtual void delete_elements();
 	virtual void fade();
 	virtual void focus();
-	virtual void get_content_area(Rect& rc);
+	virtual void get_content_area(Rect& rcContent);
 	virtual void get_parent_position(Rect& rc);
-	virtual void get_abs_content_area(Rect& rc);
 	virtual void hover(bool bHover);
 	virtual void invalidate();
 	virtual void kill_timer(uint32_t ntimer);

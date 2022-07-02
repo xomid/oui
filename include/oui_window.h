@@ -8,6 +8,7 @@ enum class OUI_API WindowType {
 };
 
 enum class OUI_API DialogButtonSet {
+	None,
 	OK,
 	OK_Cancel,
 	Yes_No,
@@ -18,9 +19,11 @@ class OUI_API UIWindow : public OUI
 {
 public:
 	OUI* caller;
+	Rect titleBarArea;
 	std::wstring title;
 	svg_path *svgApp;
-	bool btnCloseHover, btnCloseDown, btnMaxHover, btnMaxDown, btnMinHover, btnMinDown;
+	bool btnCloseHover, btnCloseDown, btnMaxHover, btnMaxDown, btnMinHover, btnMinDown, bShowTitleBar,
+		bShowMinBtn, bShowMaxBtn, bShowCloseBtn;
 	int icw, ich;
 	WindowType type;
 	Color btnCloseColor, crHover, crDown;
@@ -29,8 +32,6 @@ public:
 	void show_window(bool show = true) override;
 	virtual void close(uint32_t);
 	OUI* get_draggable(int x, int y, uint32_t flags) override;
-	void get_content_area(Rect& rc) override;
-	void get_abs_content_area(Rect& rc) override;
 	void on_update() override;
 	void on_mouse_move(int x, int y, uint32_t flags) override;
 	void on_mouse_down(int x, int y, uint32_t flags) override;
@@ -40,6 +41,11 @@ public:
 	OUI* create(int left, int top, int width, int height, OUI* caller, WindowType type);
 	virtual void set_title(std::wstring newTitle);
 	bool is_child_visible(OUI* child) override;
+	void update_position() override;
+
+	virtual void get_title_bar_area(Rect& rcTitleBar);
+	virtual void show_title_bar(bool bShow = true);
+	virtual void show_buttons(bool minimize, bool maximize, bool close);
 };
 
 struct OUI_API ButtonName {

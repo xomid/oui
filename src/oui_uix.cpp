@@ -248,13 +248,13 @@ void UIX::OnIdle() {
 		for (auto it = toDelete.begin(); it != toDelete.end(); ++it) {
 			auto elem = *it;
 			if (elem) {
-				elem->on_destroy();
 				delete elem;
 			}
 			*it = 0;
 		}
 
 		toDelete.clear();
+		toDelete.shrink_to_fit();
 		bUpdate = true;
 	}
 

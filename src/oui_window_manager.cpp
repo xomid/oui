@@ -32,3 +32,4 @@ int WindowManager::run()
 
     return 0;
 }
+
