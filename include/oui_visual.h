@@ -116,6 +116,8 @@ class OUITheme {
 public:
 	OUI_API static Color
 		primary, secondary, text,
+		menu,
+
 		border, borderActive, textSelection,
 		scroll, windowBorder, windowShadow, windowTitleBar;
 	OUI_API static int activeBorderWidth;

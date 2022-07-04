@@ -5,5 +5,6 @@
 class OUI_API UITextSearch : public UIText
 {
 public:
+	using UIText::create;
 	OUI* create(int left, int top, int width, int height, OUI* parent, bool bAddToParent = true) override;
 };

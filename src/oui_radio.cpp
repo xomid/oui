@@ -104,14 +104,11 @@ UIRadio::UIRadio() {
 
 OUI* UIRadio::create(int left, int top, int width, int height, OUI* parent, bool bAddToParent) {
 	int shapeH = CLAMP3(8, height, 20), shapeW = shapeH;
-	
+
 	auto res = UILink::create(left, top, width, height, parent, bAddToParent);
 
 	if (parent && type != UIRadioType::Button) {
 		set_background_color(parent->backgroundColor);
-	}
-	if (type == UIRadioType::Radio) {
-		padding.left = shapeLeft + shapeW + shapeMargin;
 	}
 
 	shapeLeft = 0;
@@ -128,13 +125,22 @@ OUI* UIRadio::create(int left, int top, int width, int height, OUI* parent, bool
 void UIRadio::set_type(UIRadioType type) {
 	if (this->type == type) return;
 	this->type = type;
+
+	if (type == UIRadioType::Radio) {
+		int shapeH = CLAMP3(8, boxModel.height, 20), shapeW = shapeH;
+		shape.resize(shapeW, shapeH);
+	}
+
 	invalidate_shape();
 }
 
 void UIRadio::on_update() {
 	if (type == UIRadioType::Radio)
 	{
+		int l = padding.left;
+		padding.left = shapeLeft + shape.w + shapeMargin;
 		UILabel::on_update();
+		padding.left = l;
 		canvas.bit_blt(shape, shapeLeft, (boxModel.height - shape.h) / 2, shape.w, shape.h, 0, 0, true);
 	}
 	else {
@@ -204,10 +210,9 @@ void UIRadio::on_dbl_click(int x, int y, uint32_t flags) {
 
 void UIRadio::on_resize(int width, int height) {
 	UILink::on_resize(width, height);
-	int shapeH = CLAMP3(8, boxModel.height, 20), shapeW = shapeH;
-	shape.resize(shapeW, shapeH);
 	if (type == UIRadioType::Radio) {
-		padding.left = shapeLeft + shapeW + shapeMargin;
+		int shapeH = CLAMP3(8, boxModel.height, 20), shapeW = shapeH;
+		shape.resize(shapeW, shapeH);
 	}
 	invalidate_shape();
 }

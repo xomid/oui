@@ -6,6 +6,7 @@ OUI_API bool is_key_on(uint32_t key);
 class OUI_API UIText : public UILabel
 {
 public:
+	using OUI::create;
 	UIText();
 
 	Align defaultAlignX;

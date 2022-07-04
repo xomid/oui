@@ -9,6 +9,7 @@ enum class OUI_API ScrollMode {
 class OUI_API UIScroll : public UIButton
 {
 public:
+	using UIButton::create;
 	UIScroll();
 
 	int min, viewport, page, page_pos, handlePos, handleLength, lastHandlePos, lastX, lastY;

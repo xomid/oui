@@ -10,6 +10,7 @@ enum class OUI_API UIStackMode {
 class OUI_API UIStack : public OUI
 {
 public:
+	using OUI::create;
 	UIStack();
 	std::map<std::string, OUI*> elem;
 	UIStackMode mode;

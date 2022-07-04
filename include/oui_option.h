@@ -3,5 +3,7 @@
 
 class OUI_API UIOption : public UIButton
 {
+public:
+	using UIButton::create;
 	virtual void on_update();
 };

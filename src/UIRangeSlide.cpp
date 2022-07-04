@@ -46,20 +46,20 @@ void UIRangeSlide::on_update() {
 		c = c.bright(20);
 	canvas.draw_circle(cx, cy, rad, strokeWidth, 2, back, c, fill);
 
-	cx = contentArea.left + rcHandle2.width / 2.0 + rcHandle2.left;
-	cy = contentArea.top + rcHandle2.height / 2.0 + rcHandle2.top;
+	cx = contentArea.left + rcHandle3.width / 2.0 + rcHandle3.left;
+	cy = contentArea.top + rcHandle3.height / 2.0 + rcHandle3.top;
 	c = stroke;
-	hover = chosenHandle == &rcHandle2;
+	hover = chosenHandle == &rcHandle3;
 	if (bPressed && hover)
 		c = c.bright(-20);
 	else if (hover)
 		c = c.bright(20);
 	canvas.draw_circle(cx, cy, rad, strokeWidth, 2, back, c, fill2);
 
-	cx = contentArea.left + rcHandle3.width / 2.0 + rcHandle3.left;
-	cy = contentArea.top + rcHandle3.height / 2.0 + rcHandle3.top;
+	cx = contentArea.left + rcHandle2.width / 2.0 + rcHandle2.left;
+	cy = contentArea.top + rcHandle2.height / 2.0 + rcHandle2.top;
 	c = stroke;
-	hover = chosenHandle == &rcHandle3;
+	hover = chosenHandle == &rcHandle2;
 	if (bPressed && hover)
 		c = c.bright(-20);
 	else if (hover)
@@ -71,9 +71,9 @@ void* UIRangeSlide::get_handle(int x, int y, uint32_t flags) {
 	if (dir == SlideDirection::HORIZONTAL) {
 		if (x <= rcHandle.left + rcHandle.width)
 			return &rcHandle;
-		if (x >= rcHandle3.left)
-			return &rcHandle3;
-		return &rcHandle2;
+		if (x >= rcHandle2.left)
+			return &rcHandle2;
+		return &rcHandle3;
 	}
 	return 0;
 }
@@ -81,12 +81,21 @@ void* UIRangeSlide::get_handle(int x, int y, uint32_t flags) {
 double UIRangeSlide::calc_value(void* handle, int x, int y, uint32_t flags) {
 	double t = 0;
 	if (dir == SlideDirection::HORIZONTAL) {
-		if (handle != &rcHandle2) {
+		if (handle != &rcHandle3) {
 			double v = double(CLAMP3(minPos, x - (rcHandle.width >> 1), maxPos));
-			return v / double(maxPos - minPos);
+			v = v / double(maxPos - minPos);
+
+			if (handle == &rcHandle) {
+				Float maxT = (range2.value - range2.minValue) / (range2.maxValue - range2.minValue);
+				return fmin(v, atof(maxT.str().c_str()));
+			}
+			else {
+				Float minT = (range.value - range.minValue) / (range.maxValue - range.minValue);
+				return fmax(v, atof(minT.str().c_str()));
+			}
 		}
-		return double(CLAMP3(rcHandle.left, x - (rcHandle.width >> 1), rcHandle3.left) - rcHandle.left)
-			/ double(rcHandle3.left - rcHandle.left);
+		return double(CLAMP3(rcHandle.left, x - (rcHandle3.width >> 1), rcHandle2.left) - rcHandle.left)
+			/ double(rcHandle2.left - rcHandle.left);
 	}
 	return t;
 }
@@ -102,9 +111,9 @@ void UIRangeSlide::calc_handle_pos(void* handle, double t) {
 			maxPos = contentArea.width - handleWidth;
 			left = t * (maxPos - minPos);
 
-			if (rc != &rcHandle2) {
+			if (rc != &rcHandle3) {
 				if (rc == &rcHandle)
-					left = CLAMP3(minPos, left, rcHandle3.left);
+					left = CLAMP3(minPos, left, rcHandle2.left);
 				else
 					left = CLAMP3(rcHandle.left, left, maxPos);
 			}
@@ -112,8 +121,8 @@ void UIRangeSlide::calc_handle_pos(void* handle, double t) {
 				Float res = (boundRange.value - boundRange.minValue)
 					/ (boundRange.maxValue - boundRange.minValue);
 
-				left = t * (rcHandle3.left - rcHandle.left) + rcHandle.left;
-				left = CLAMP3(rcHandle.left, left, rcHandle3.left);
+				left = t * (rcHandle2.left - rcHandle.left) + rcHandle.left;
+				left = CLAMP3(rcHandle.left, left, rcHandle2.left);
 				t = fmin(fmax(t, 0.), 1.);
 				boundRange.value = t * (boundRange.maxValue - boundRange.minValue) + boundRange.minValue;
 				//boundRange.correct();
@@ -126,22 +135,26 @@ void UIRangeSlide::calc_handle_pos(void* handle, double t) {
 		}
 
 		rc->set(left, top, handleWidth, handleWidth);
-		if (rc != &rcHandle2)
-			rcHandle2.left = mid * (rcHandle3.left - rcHandle.left) + rcHandle.left;
+		if (rc != &rcHandle3)
+			rcHandle3.left = mid * (rcHandle2.left - rcHandle.left) + rcHandle.left;
 	}
 }
 
 void UIRangeSlide::on_range_update() {
+	UIDoubleSlide::on_range_update();
+
 	UISlide::calc_handle_pos(range, &rcHandle);
-	UISlide::calc_handle_pos(boundRange, &rcHandle2);
-	UISlide::calc_handle_pos(range2, &rcHandle3);
+	UISlide::calc_handle_pos(range2, &rcHandle2);
+	UISlide::calc_handle_pos(boundRange, &rcHandle3);
 }
 
 RangedFloat& UIRangeSlide::get_range(void* handle) {
-	if (handle == &rcHandle2)
+	if (handle == &rcHandle3) {
 		return boundRange;
-	if (handle == &rcHandle)
+	}
+	if (handle == &rcHandle) {
 		return range;
+	}
 	return range2;
 }
 
@@ -177,5 +190,5 @@ double UIRangeSlide::get_value(int handleId) const {
 void UIRangeSlide::alert_parent(void* handle) {
 	if (parent)
 		parent->process_event(this, Event::Update, handle == &rcHandle ? 0 :
-			handle == &rcHandle2 ? 1 : 2, true);
+			handle == &rcHandle3 ? 1 : 2, true);
 }

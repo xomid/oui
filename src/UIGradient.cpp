@@ -1,5 +1,9 @@
 #include "UIGradient.h"
 
+OUI_API void gradient_func_black_white(void* param, double t, Color& res) {
+	byte gray = CLAMP255(int(t * 255 + .5));
+	res.set(gray, gray, gray);
+};
 
 void UIGradient::on_init() {
 	img.create(10, 10, 3);
@@ -10,7 +14,7 @@ void UIGradient::on_init() {
 void UIGradient::on_resize(int width, int height) {
 	OUI::get_content_area(contentArea);
 	img.resize(contentArea.width, contentArea.height);
-	img.clear(0xff, 0, 0xff);
+	fill_image();
 }
 
 void UIGradient::set_gradient(GradientFunc gradientFunc, bool vertical, bool reverse) {

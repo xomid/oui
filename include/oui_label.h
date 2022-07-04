@@ -8,6 +8,7 @@ typedef SVGShape* PSVGShape;
 class OUI_API UILabel : public OUI
 {
 public:
+	using OUI::create;
 	UILabel();
 
 	static std::map<std::string, agg::svg::path_renderer*> *cachedPath;

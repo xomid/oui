@@ -224,10 +224,10 @@ void UINumber::on_mouse_leave(OUI* next) {
 }
 
 void UINumber::set_range(double num, double step, double minValue, double maxValue) {
-	number.set_value(num);
-	number.set_step(step);
 	number.set_min(minValue);
 	number.set_max(maxValue);
+	number.set_step(step);
+	number.set_value(num);
 	num_to_text();
 }
 

@@ -14,6 +14,7 @@ private:
 	clock_t lastDown, lastChange, waitingElapse;
 
 public:
+	using UIText::create;
 	UINumber();
 
 	void set_value(double value);

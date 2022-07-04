@@ -105,9 +105,8 @@ public:
 	Rect handleArea;
 	Color downBackColor, hoverBackColor;
 
+	using UILabel::create;
 	UIButton();
-
-	virtual void enable(bool bEnable = true);
 
 	void apply_theme(bool bInvalidate = true) override;
 	bool is_withinArea(int x, int y);

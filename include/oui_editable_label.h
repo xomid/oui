@@ -3,6 +3,7 @@
 
 class OUI_API UIEditableLabel : public UIText {
 public:
+	using UIText::create;
 	bool bEditable;
 	UIEditableLabel();
 	void set(bool editable);

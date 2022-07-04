@@ -14,7 +14,9 @@ protected:
 	Sheet shape;
 	int shapeLeft, shapeMargin;
 	Color borderColor, normalBorderColor;
+
 public:
+	using UILink::create;
 	UIRadio();
 
 	void on_resize(int width, int height) override;

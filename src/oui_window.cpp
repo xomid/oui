@@ -227,7 +227,7 @@ void UIDialog::process_event(OUI* element, uint32_t message, uint64_t param, boo
 
 OUI* UIDialog::create(int width, int height, OUI* caller, size_t buttonCount) {
 	height += InitialValues::titleBarHeight;
-	int brd = 4, fontSize = 15, w = 100, h = 34;
+	int brd = 4, fontSize = 15, w = 60, h = 24;
 	int l, t, mar = 15, midmar = 8;
 	int totalW = int(buttonCount) * w + 2 * mar + Max(int(buttonCount) - 1, 0) * midmar;
 	height = Max(height, InitialValues::titleBarHeight);

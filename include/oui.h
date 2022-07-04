@@ -53,6 +53,7 @@ public:
 	virtual bool on_mouse_wheel(int x, int y, int zDelta, uint32_t param);
 	virtual bool select(bool bSelect);
 	virtual OUI* create(int left, int top, int width, int height, OUI* parent, bool bAddToParent = true);
+	virtual OUI* create(OUI* parent, bool bAddToParent = true);
 	virtual OUI* get_capture();
 	virtual OUI* get_draggable(int x, int y, uint32_t flags);
 	virtual OUI* get_root();
@@ -104,6 +105,7 @@ public:
 	virtual void set_text(std::wstring text);
 	virtual void set_timer(uint32_t nTimer, uint32_t nElapse);
 	virtual void show_window(bool bShow = true);
+	virtual void enable(bool bEnable = true);
 	virtual void update_position();
 
 	// no default behavior

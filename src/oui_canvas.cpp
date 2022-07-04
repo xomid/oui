@@ -483,7 +483,7 @@ void Canvas::clear(Rect* rect, const Color* color) {
 }
 
 void Canvas::draw_line(int x0, int y0, int x1, int y1) {
-	if (!sheet || !area) return;
+	if (!sheet) return;
 	pixfmt_bgr pf(sheet, area);
 	agg::path_storage path;
 	agg::conv_stroke<agg::path_storage> stroke(path);

@@ -433,9 +433,19 @@ void UIX::OnMouseMove(uint32_t nFlags, int x, int y)
 		OUI* curr = NULL, * currMenu = NULL, * currWindow = NULL;
 
 		if (locked) {
-			if (currDialog->area.is_inside(x, y))
-				curr = currWindow = OUI::find_element(currDialog, x, y);
-			else curr = container;
+			for (auto& it : menus) {
+				UIMenu* menu = (UIMenu*)it.second;
+				if (menu->area.is_inside(x, y) && menu->bVisible) {
+					curr = currMenu = OUI::find_element(menu, x, y);
+					break;
+				}
+			}
+
+			if (!curr) {
+				if (currDialog->area.is_inside(x, y))
+					curr = currWindow = OUI::find_element(currDialog, x, y);
+				else curr = container;
+			}
 		}
 		else
 		{
@@ -480,20 +490,20 @@ void UIX::OnLButtonDown(uint32_t nFlags, int x, int y)
 	if (!container) return;
 	bool locked = is_locked();
 
-	if (!locked) {
-		for (auto it = menus.begin(), end = menus.end(); it != end; ) {
-			UIMenu* menu = (UIMenu*)it->second;
-			if (!menu->area.is_inside(x, y) && !menu->parent->area.is_inside(x, y)) {
-				menu->show_window(false);
-				it = menus.erase(it);
-				if (menu->parent)
-					menu->parent->process_event(menu, Event::Deselect, 0, true);
-				invalidate();
-				continue;
-			}
-			it++;
+	for (auto it = menus.begin(), end = menus.end(); it != end; ) {
+		UIMenu* menu = (UIMenu*)it->second;
+		if (!menu->area.is_inside(x, y) && !menu->parent->area.is_inside(x, y)) {
+			menu->show_window(false);
+			it = menus.erase(it);
+			if (menu->parent)
+				menu->parent->process_event(menu, Event::Deselect, 0, true);
+			invalidate();
+			continue;
 		}
+		it++;
+	}
 
+	if (!locked) {
 		OUI* node = currentElementHovering;
 		while (visibleWindows > 0 && node) {
 			if (windowsIndex.count((UIWindow*)node)) {
@@ -518,38 +528,39 @@ void UIX::OnLButtonDown(uint32_t nFlags, int x, int y)
 		capturedElement->on_mouse_down(TORELX(x, capturedElement->area), TORELY(y, capturedElement->area), nFlags);
 	}
 	else {
-		OUI* currMenu = NULL, * currWindow = NULL;
-		if (locked) {
-			if (currDialog->area.is_inside(x, y)) {
-				currWindow = OUI::find_element(currDialog, x, y);
-				if (currWindow)
-					currWindow->on_mouse_down(TORELX(x, currWindow->area), TORELY(y, currWindow->area), nFlags);
-			}
-		}
-		else
-		{
-			for (auto it = menus.begin(); it != menus.end(); it++) {
-				UIMenu* menu = (UIMenu*)it->second;
-				if (menu->area.is_inside(x, y) && menu->bVisible) {
-					currMenu = menu;
-					break;
-				}
-			}
+		//OUI* currMenu = NULL, * currWindow = NULL;
+		//if (locked) {
+		//	if (currDialog->area.is_inside(x, y)) {
+		//		currWindow = OUI::find_element(currDialog, x, y);
+		//		if (currWindow)
+		//			currWindow->on_mouse_down(TORELX(x, currWindow->area), TORELY(y, currWindow->area), nFlags);
+		//	}
+		//}
+		//else
+		//{
+		//	for (auto it = menus.begin(); it != menus.end(); it++) {
+		//		UIMenu* menu = (UIMenu*)it->second;
+		//		if (menu->area.is_inside(x, y) && menu->bVisible) {
+		//			currMenu = menu;
+		//			break;
+		//		}
+		//	}
 
-			for (int i = (int)windows.size() - 1; i > -1; --i) {
-				auto* win = windows[i];
-				if (win->area.is_inside(x, y) && win->bVisible) {
-					currWindow = win;
-					break;
-				}
-			}
+		//	for (int i = (int)windows.size() - 1; i > -1; --i) {
+		//		auto* win = windows[i];
+		//		if (win->area.is_inside(x, y) && win->bVisible) {
+		//			currWindow = win;
+		//			break;
+		//		}
+		//	}
 
-			/*if (currMenu) currentElementHovering->on_mouse_down(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
-			else if (currWindow) currentElementHovering->on_mouse_down(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
-			else */
-			
-			if (currentElementHovering) currentElementHovering->on_mouse_down(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
-		}
+		//	/*if (currMenu) currentElementHovering->on_mouse_down(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+		//	else if (currWindow) currentElementHovering->on_mouse_down(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+		//	else */
+
+		//}
+
+		if (currentElementHovering) currentElementHovering->on_mouse_down(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 	}
 
 	update();
@@ -585,38 +596,39 @@ void UIX::OnLButtonUp(uint32_t nFlags, int x, int y)
 		if (b) capturedElement = NULL;
 	}
 	else {
-		OUI* currMenu = NULL, * currWindow = NULL;
+		//OUI* currMenu = NULL, * currWindow = NULL;
 
-		if (locked) {
-			if (currDialog->area.is_inside(x, y)) {
-				currWindow = OUI::find_element(currDialog, x, y);
-				if (currWindow && currentElementHovering)
-					currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
-			}
-		}
-		else
-		{
-			for (auto it = menus.begin(); it != menus.end(); it++) {
-				UIMenu* menu = (UIMenu*)it->second;
-				if (menu->area.is_inside(x, y) && menu->bVisible) {
-					currMenu = menu;
-					break;
-				}
-			}
+		//if (locked) {
+		//	if (currDialog->area.is_inside(x, y)) {
+		//		currWindow = OUI::find_element(currDialog, x, y);
+		//		if (currWindow && currentElementHovering)
+		//			currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+		//	}
+		//}
+		//else
+		//{
+		//	for (auto it = menus.begin(); it != menus.end(); it++) {
+		//		UIMenu* menu = (UIMenu*)it->second;
+		//		if (menu->area.is_inside(x, y) && menu->bVisible) {
+		//			currMenu = menu;
+		//			break;
+		//		}
+		//	}
 
-			for (int i = (int)windows.size() - 1; i > -1; --i) {
-				auto* win = windows[i];
-				if (win->area.is_inside(x, y) && win->bVisible) {
-					currWindow = win;
-					break;
-				}
-			}
+		//	for (int i = (int)windows.size() - 1; i > -1; --i) {
+		//		auto* win = windows[i];
+		//		if (win->area.is_inside(x, y) && win->bVisible) {
+		//			currWindow = win;
+		//			break;
+		//		}
+		//	}
 
-			//if (currMenu) currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
-			//else if (currWindow) currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
-			//else 
-			if (currentElementHovering) currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
-		}
+		//	//if (currMenu) currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+		//	//else if (currWindow) currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
+		//	//else 
+		//}
+
+		if (currentElementHovering) currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 	}
 
 	update();

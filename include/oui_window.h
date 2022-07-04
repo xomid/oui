@@ -28,6 +28,8 @@ public:
 	WindowType type;
 	Color btnCloseColor, crHover, crDown;
 
+	using OUI::create;
+
 	void apply_theme(bool bInvalidate) override;
 	void show_window(bool show = true) override;
 	virtual void close(uint32_t);

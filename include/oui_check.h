@@ -8,6 +8,7 @@ private:
 	ShapeStorage roundedRect;
 	Color checkColor;
 public:
+	using UIRadio::create;
 	UICheck();
 	void invalidate_shape() override;
 	void on_click(int x, int y, uint32_t param) override;

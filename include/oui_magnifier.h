@@ -8,6 +8,8 @@ class UIMagnifier : public OUI {
 	Sheet img;
 
 public:
+	using OUI::create;
+
 	void update_zoom_rect();
 	void set_scale(double scale);
 	void on_init() override;

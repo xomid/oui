@@ -3,6 +3,8 @@
 
 typedef void (*GradientFunc)(void* param, double t, Color& res);
 
+OUI_API void gradient_func_black_white(void* param, double t, Color& res);
+
 class OUI_API UIGradient : public UIButton {
 	Sheet img;
 	GradientFunc gradientFunc;

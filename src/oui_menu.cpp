@@ -16,3 +16,7 @@ OUI* UIMenu::create(int left, int top, int width, int height, OUI* parent, bool 
 	return this;
 }
 
+void UIMenu::apply_theme(bool bInvalidate) {
+	OUI::apply_theme(bInvalidate);
+	set_background_color(OUITheme::menu);
+}

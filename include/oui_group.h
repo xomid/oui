@@ -3,5 +3,6 @@
 class OUI_API UIGroup : public UIStack
 {
 public:
+	using UIStack::create;
 	void process_event(OUI* element, uint32_t message, uint64_t param, bool bubbleUp) override;
 };

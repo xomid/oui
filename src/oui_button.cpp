@@ -7,12 +7,6 @@ UIButton::UIButton() {
 	enable();
 }
 
-void UIButton::enable(bool bEnable) {
-	if (this->bEnabled == bEnable) return;
-	this->bEnabled = bEnable;
-	invalidate();
-}
-
 void UIButton::on_update() {
 	if (!bEnabled) {
 		backgroundColor.save();

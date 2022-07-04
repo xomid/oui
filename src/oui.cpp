@@ -604,6 +604,10 @@ OUI* OUI::create(int left, int top, int width, int height, OUI* parent, bool bAd
 	return this;
 }
 
+OUI* OUI::create(OUI* parent, bool bAddToParent) {
+	return create(0, 0, 0, 0, parent, bAddToParent);
+}
+
 void OUI::get_parent_position(Rect& rect) {
 	if (parent) {
 		rect.set(parent->contentArea);
@@ -757,6 +761,12 @@ void OUI::fade() {
 
 void OUI::show_window(bool bShow) {
 	bVisible = bShow;
+	invalidate();
+}
+
+void OUI::enable(bool bEnable) {
+	if (this->bEnabled == bEnable) return;
+	this->bEnabled = bEnable;
 	invalidate();
 }
 
