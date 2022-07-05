@@ -168,6 +168,14 @@ void UIRangeSlide::set_bound_range(double low, double high, double step) {
 	}
 }
 
+void UIRangeSlide::set_bound_range(std::string low, std::string high, std::string step) {
+	boundRange.set_min(low);
+	boundRange.set_max(high);
+	boundRange.set_step(step);
+	on_range_update();
+}
+
+
 void UIRangeSlide::set_value(int handleId, double value) {
 	if (handleId == 0)
 		range.set_value(value);

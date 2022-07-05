@@ -7,7 +7,24 @@ UISlide::UISlide()
 	strokeWidth = 1;
 }
 
+void UISlide::set_range(double minValue, double maxValue) {
+	range.set_min(minValue);
+	range.set_max(maxValue);
+	on_range_update();
+}
+
+void UISlide::set_range(std::string minValue, std::string maxValue) {
+	range.set_min(minValue);
+	range.set_max(maxValue);
+	on_range_update();
+}
+
 void UISlide::set_step(double stepValue) {
+	range.set_step(stepValue);
+	on_range_update();
+}
+
+void UISlide::set_step(std::string stepValue) {
 	range.set_step(stepValue);
 	on_range_update();
 }
@@ -17,14 +34,13 @@ void UISlide::set_value(double value) {
 	on_range_update();
 }
 
-double UISlide::get_value() const {
-	return atof(range.value.str().c_str());
+void UISlide::set_value(std::string value) {
+	range.set_value(value);
+	on_range_update();
 }
 
-void UISlide::set_range(double minValue, double maxValue) {
-	range.set_min(minValue);
-	range.set_max(maxValue);
-	on_range_update();
+double UISlide::get_value() const {
+	return atof(range.value.str().c_str());
 }
 
 void UISlide::calc_handle_pos(RangedFloat& number, void* handle) {

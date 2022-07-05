@@ -21,6 +21,7 @@ public:
 	void on_update() override;
 
 	void set_bound_range(double low, double high, double step);
+	void set_bound_range(std::string low, std::string high, std::string step);
 	void set_handle_color(int handleId, Color fillColor) override;
 	double get_value(int handleId) const override;
 	void set_value(int handleId, double value) override;

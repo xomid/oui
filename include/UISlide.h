@@ -3,7 +3,7 @@
 #include "UIGradient.h"
 #include <precise_float.h>
 
-OUI_API enum class SlideDirection {
+enum class OUI_API SlideDirection {
 	HORIZONTAL,
 	VERTICAL
 };
@@ -37,8 +37,12 @@ public:
 	void on_mouse_up(int x, int y, uint32_t flags) override;
 
 	void set_range(double minValue, double maxValue);
+	void set_range(std::string minValue, std::string maxValue);
 	void set_step(double stepValue);
+	void set_step(std::string stepValue);
 	void set_value(double value);
+	void set_value(std::string value);
+
 	double get_value() const;
 };
 
