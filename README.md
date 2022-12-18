@@ -1,6 +1,6 @@
 # OUI
 A High performance and highly customizable GUI library for C/C++.
-<br/>Projects that are based on this library can be found under my repo. some of them are:
+<br/>Here are some of the projects which utilize this library:
 <br/>**- [Scene](https://github.com/xomid/scene)**
 <br/>**- [Color Picker](https://github.com/xomid/color_picker)**
 
