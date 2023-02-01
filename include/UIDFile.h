@@ -3,7 +3,7 @@
 #include <vector>
 #include "oui.h"
 
-OUI_API enum class FileDialogOptions {
+enum class OUI_API FileDialogOptions : uint32_t {
 	OVERWRITEPROMPT = 0x2,
 	STRICTFILETYPES = 0x4,
 	NOCHANGEDIR = 0x8,
@@ -29,7 +29,7 @@ OUI_API enum class FileDialogOptions {
 	SUPPORTSTREAMABLEITEMS = 0x80000000
 };
 
-OUI_API struct FileDialogFileType {
+struct OUI_API FileDialogFileType {
 	std::wstring title, extention;
 };
 
@@ -38,9 +38,9 @@ class OUI_API UIDFile
 protected:
 	std::wstring title, defaultDirectory, directory, btnOKText, fileName, fileNameLabel, defaultExtention;
 	std::vector<FileDialogFileType> fileTypes;
-	uint32_t fileTypeIndex;
 	std::vector<std::wstring> fileNames;
 	std::vector<FileDialogOptions> options;
+	uint32_t fileTypeIndex;
 
 public:
 	void set_title(std::wstring title);
