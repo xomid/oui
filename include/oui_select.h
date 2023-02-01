@@ -101,7 +101,7 @@ public:
 			auto e = menu->elements[i];
 			if (e->bVisible && !ghostState[i]) {
 				if (e == selectedOption)
-					return visibleIndex;
+					return (int)visibleIndex;
 				++visibleIndex;
 			}
 		}
