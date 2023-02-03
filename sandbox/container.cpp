@@ -12,13 +12,14 @@ UIButton btnOpen;
 
 void UIContainer::on_init()
 {
-	int l = -30,
+	int l = 100,
 		t = 100,
 		w = 340,
 		h = 200;
 	
 	btnOpen.create(l, t, 115, 40, this);
 	btnOpen.isDraggable = true;
+	btnOpen.set_text(L"Open ...");
 
 	set_background_color(Color(L"#ecf0f3"));
 	btnOpen.set_background_color(Color(L"#ecf0f3"));
@@ -35,8 +36,6 @@ void UIContainer::on_init()
 	//OUITheme::secondary.set("#ddd");
 	//OUITheme::text.set("#444");
 	//uix->apply_theme_all();
-	
-	uix->show_box_model();
 }
 
 
