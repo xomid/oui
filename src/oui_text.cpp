@@ -19,7 +19,7 @@ UIText::UIText() : UILabel() {
 	shiftX = 0;
 	shiftY = 0;
 	blink = false;
-	bFocusable = true;
+	isFocusable = true;
 	blinkerSpeed = 500;
 	textW = textH = 0;
 	//add_box_shadow(false, 0, 1, 3, 0, Color("#0001"));
@@ -44,7 +44,7 @@ void UIText::reset_selection() {
 }
 
 OUI* UIText::get_draggable(int x, int y, uint32_t flags) {
-	return bDraggable && !contentArea.is_inside(x, y) ? this : 0;
+	return isDraggable && !contentArea.is_inside(x, y) ? this : 0;
 }
 
 Point UIText::get_cursor_pos(bool absolute) {
@@ -156,14 +156,14 @@ void UIText::on_mouse_move(int x, int y, uint32_t flags) {
 void UIText::on_mouse_enter(OUI* prev) {
 	UILabel::on_mouse_enter(prev);
 	isHover = true;
-	//if (!bActive) border.set_color(Color("#868993"));
+	//if (!isActive) border.set_color(Color("#868993"));
 	invalidate();
 }
 
 void UIText::on_mouse_leave(OUI* next) {
 	UILabel::on_mouse_leave(next);
 	isHover = false;
-	//if (!bActive) border.set_color(Color("#6a6d78"));
+	//if (!isActive) border.set_color(Color("#6a6d78"));
 	invalidate();
 }
 
@@ -311,7 +311,7 @@ int UIText::get_index(int x, int y) {
 }
 
 void UIText::on_key_down(uint32_t key, uint32_t nrep, uint32_t flags) {
-	if (!bActive) return;
+	if (!isActive) return;
 	if (key != VK_SHIFT && key != VK_CAPITAL) {
 
 		invalidate();
@@ -446,7 +446,7 @@ void UIText::set_direction(Align align) {
 }
 
 void UIText::on_update() {
-	if (bActive) {
+	if (isActive) {
 		Color c = backgroundColor;
 		backgroundColor.brightness(&c, -1);
 		OUI::on_update();

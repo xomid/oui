@@ -20,7 +20,7 @@ void UICheck::gen_check_shape(Sheet& sheet, Color back, Color color, Color norma
 		outerR = color.r, outerG = color.g, outerB = color.b,
 		backR = backgroundColor.r, backG = backgroundColor.g, backB = backgroundColor.b;
 
-	if (bSelected)
+	if (isSelected)
 		innerR = color.r, innerG = color.g, innerB = color.b;
 	else {
 		color = normalColor;
@@ -237,7 +237,7 @@ void UICheck::gen_check_shape(Sheet& sheet, Color back, Color color, Color norma
 	}
 
 	Canvas can(NULL, &shape);
-	if (bSelected) {
+	if (isSelected) {
 
 		colors["currentColor"].set(checkColor);
 		can.render_svg(checkShape, 1, 1, shape.w, shape.h, 0xff, NULL, NULL);
@@ -251,8 +251,8 @@ void UICheck::invalidate_shape() {
 }
 
 void UICheck::on_click(int x, int y, uint32_t param) {
-	if (!bEnabled) return;
-	if (parent) parent->process_event(this, bSelected ? Event::Deselect : Event::Select, 0, true);
+	if (!isEnabled) return;
+	if (parent) parent->process_event(this, isSelected ? Event::Deselect : Event::Select, 0, true);
 }
 
 bool UICheck::select(bool bSelect) {

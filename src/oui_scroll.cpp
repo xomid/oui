@@ -6,7 +6,7 @@ UIScroll::UIScroll(): UIButton() {
 	mode = ScrollMode::Vertical;
 	scrollX = NULL;
 	scrollY = NULL;
-	bVisible = false;
+	isVisible = false;
 }
 
 OUI* UIScroll::create(int left, int top, int width, int height, OUI* parent, bool bAddToParent) {
@@ -36,12 +36,12 @@ OUI* UIScroll::create(int left, int top, int width, int height, OUI* parent, boo
 
 void UIScroll::on_update_frame() {
 	if (uix == NULL) return;
-	if (bInvalidated) {
+	if (shouldInvalidate) {
 		uix->lock_screen(id);
 		on_update();
 		uix->unlock_screen(id);
 		uix->update_section(&area);
-		bInvalidated = false;
+		shouldInvalidate = false;
 	}
 }
 
@@ -84,7 +84,7 @@ void UIScroll::set_page(int page, int viewport) {
 }
 
 void UIScroll::on_mouse_move(int x, int y, uint32_t param) {
-	//if (!bVisible) return;
+	//if (!isVisible) return;
 	UIButton::on_mouse_move(x, y, param);
 
 	if (isPressed) {
@@ -130,7 +130,7 @@ void UIScroll::calc_handle_pos(int pos) {
 }
 
 void UIScroll::set_pos(int pos) {
-	if (!bVisible) return;
+	if (!isVisible) return;
 	int total = get_total();
 	int d = (total - handleLength);
 	int v = (page - viewport);
@@ -141,7 +141,7 @@ void UIScroll::set_pos(int pos) {
 }
 
 int UIScroll::get_pos() const {
-	if (!bVisible) return 0;
+	if (!isVisible) return 0;
 	return page_pos;
 }
 

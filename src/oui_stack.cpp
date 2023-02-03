@@ -7,7 +7,7 @@
 
 UIStack::UIStack(): OUI() {
 	mode = UIStackMode::STACKHOR;
-	bScrollable = true;
+	isScrollable = true;
 	bStretch = false;
 	overflow = Overflow::hidden;
 }
@@ -33,13 +33,13 @@ void UIStack::measure_size(int* width, int* height) {
 	/*int cw = 0, ch = 0;
 	measure_content(&cw, &ch);*/
 
-	/*if (scrollX && scrollX->bVisible) {
+	/*if (scrollX && scrollX->isVisible) {
 		r = scrollX->area.left + scrollX->area.width - contentArea.left;
 		b = scrollX->area.top + scrollX->area.height - contentArea.top;
 		cw = Max(r, cw);
 		ch = Max(b, ch);
 	}
-	if (scrollY && scrollY->bVisible) {
+	if (scrollY && scrollY->isVisible) {
 		r = scrollY->area.left + scrollY->area.width - contentArea.left;
 		b = scrollY->area.top + scrollY->area.height - contentArea.top;
 		cw = Max(r, cw);
@@ -65,7 +65,7 @@ void UIStack::measure_content(int* w, int* h) {
 
 		iterateV(elements) {
 			auto elem = *it;
-			if (!elem->bVisible)
+			if (!elem->isVisible)
 				continue;
 			cw = ch = 0;
 			elem->measure_size(&cw, &ch);
@@ -88,7 +88,7 @@ void UIStack::measure_content(int* w, int* h) {
 		int prevButtom = 0;
 		iterateV(elements) {
 			auto elem = *it;
-			if (!elem->bVisible)
+			if (!elem->isVisible)
 				continue;
 			cw = ch = 0;
 			elem->measure_size(&cw, &ch);
@@ -140,7 +140,7 @@ void UIStack::on_resize(int width, int height) {
 
 		iterateV(elements) {
 			auto elem = *it;
-			if (!elem->bVisible)
+			if (!elem->isVisible)
 				continue;
 			cw = ch = 0;
 			elem->measure_size(&cw, &ch);
@@ -165,7 +165,7 @@ void UIStack::on_resize(int width, int height) {
 		int prevTop = 0;
 		iterateV(elements) {
 			auto elem = *it;
-			if (!elem->bVisible)
+			if (!elem->isVisible)
 				continue;
 			l = left + elem->margin.left;
 
@@ -211,7 +211,7 @@ void UIStack::move_page(int left, int top) {
 	else if (mode == UIStackMode::STACKVER) {
 		iterateV(elements) {
 			auto elem = *it;
-			if (!elem->bVisible)
+			if (!elem->isVisible)
 				continue;
 			l = left + elem->margin.left;
 
@@ -246,6 +246,6 @@ void UIStack::move_page_hor(int left) {
 
 void UIStack::get_content_area(Rect& rc) {
 	OUI::get_content_area(rc);
-	if (scrollY && scrollY->bVisible)
+	if (scrollY && scrollY->isVisible)
 		rc.width = Max(rc.width - 10, 0);
 }

@@ -3,11 +3,11 @@
 
 UIMenu::UIMenu() : UIStack() {
 	mode = UIStackMode::STACKVER;
-	bVisible = false;
+	isVisible = false;
 	zIndex = 1;
-	bMenu = true;
+	isMenu = true;
 	bStretch = true;
-	bScrollable = true;
+	isScrollable = true;
 }
 
 OUI* UIMenu::create(int left, int top, int width, int height, OUI* parent, bool bAddToParent) {

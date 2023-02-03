@@ -28,8 +28,7 @@ public:
 	std::wstring text, fontName;
 	Sheet* godSheet;
 	int lockerID, transparenElementsSize, zIndex, fontSize;
-	bool bInvalidated, bVisible, bFocusable, bCreated,
-		bActive, bEnabled, bSelected, isHover, bMenu, bScrollable, bDraggable;
+	bool shouldInvalidate, isVisible, isFocusable, isCreated, isActive, isEnabled, isSelected, isHover, isMenu, isScrollable, isDraggable;
 	byte opacity;
 	Color color, backgroundColor;
 	ShapeStorage shape, contentShape, absContentShape;

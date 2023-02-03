@@ -15,7 +15,7 @@ void UIRadio::gen_circle_shape(Sheet& sheet, Color back, Color border, Color nor
 	outerRad = double((h - 2 * margin) >> 1);
 	outerWidth = Min(4, int(w + 3) / 4);
 
-	if (!bSelected) {
+	if (!isSelected) {
 		border.set(normalBorder);
 		outerWidth = 1.3;
 	}
@@ -145,7 +145,7 @@ void UIRadio::on_update() {
 	}
 	else {
 		auto c = backgroundColor;
-		if (bSelected || (isPressed && isHover))
+		if (isSelected || (isPressed && isHover))
 			backgroundColor.set(downBackColor);
 		else if (isHover)
 			backgroundColor.set(hoverBackColor);
@@ -175,7 +175,7 @@ void UIRadio::invalidate_shape() {
 }
 
 void UIRadio::on_click(int x, int y, uint32_t param) {
-	if (!bEnabled) return;
+	if (!isEnabled) return;
 	if (parent) parent->process_event(this, Event::Select, 0, true);
 }
 

@@ -19,7 +19,6 @@ public:
 	UIX& operator=(const UIX&) = delete;
 	~UIX();
 	bool ProcessMessages();
-	void set_title(std::wstring title);
 	void render();
 	Point get_cursor_pos();
 	void focus_next();
@@ -60,6 +59,9 @@ public:
 	bool is_key_down(uint32_t key);
 	bool is_key_on(uint32_t key);
 	void show_window(bool show);
+	void set_title(std::wstring title);
+	bool is_window_visible() const;
+	void invalidate_child();
 
 	void PreLButtonDown(int x, int y, uint32_t param);
 	void OnIdle();
@@ -90,30 +92,28 @@ private:
 	HDC displayDC, hdc;
 	HBITMAP bit;
 	HANDLE hTimer, hTimerQueue;
+	HINSTANCE m_hInstance;
+	HWND hWnd;
+	DWORD style;
+
 	Sheet sheet;
 	std::vector<_Variable*> watchList;
 	std::vector<timer*> timers;
 	std::map<OUI*, OUI*> menus;
 	std::map<UIWindow*, UIWindow*> windowsIndex;
 	std::vector<UIWindow*> windows;
-	UIWindow* currDialog;
 	std::vector<OUI*> elements, focusables, toDelete;
-	OUI* container, * currentElementHovering, * capturedElement, * lastDragHoverElement;
+	UIWindow* currDialog;
 	UIWindow* activeWindow;
-	bool bInvalidated, bDrawBoxModel, bDrawMagnifier, bAsyncTimer, terminate, terminated;
-	int id, lockerID, focusedElementID, visibleWindows;
-	clock_t last_time;
-	Drag<int, int> dragMan;
-	int countbuffer;
-	std::string strbuffer;
-	int dragZIndex;
-	clock_t lastLButtonDownTime;
-	int lXPos, lYPos;
+	OUI* container, * currentElementHovering, * capturedElement, * lastDragHoverElement;
 	UIMagnifier magnifier;
-	HINSTANCE m_hInstance;
-	HWND hWnd;
+	Drag<int, int> dragMan;
+	bool shouldInvalidate, bDrawBoxModel, bDrawMagnifier, bAsyncTimer, terminate, terminated, shouldUpdate;
+	int id, lockerID, focusedElementID, visibleWindows, countBuffer, lXPos, lYPos, dragZIndex;
+	std::string strbuffer;
+	std::wstring title;
+	clock_t last_time, lastLButtonDownTime;
 	Point cursorPos;
-	DWORD style;
 	const wchar_t* CLASS_NAME = L"UIX";
 };
 

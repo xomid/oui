@@ -2,13 +2,13 @@
 
 UIButton::UIButton() {
 	isPressed = isHover = 0;
-	bFocusable = false;
+	isFocusable = false;
 	borderRadius.set(4, 4, 4, 4);
 	enable();
 }
 
 void UIButton::on_update() {
-	if (!bEnabled) {
+	if (!isEnabled) {
 		backgroundColor.save();
 		color.save();
 		backgroundColor.brightness(&backgroundColor, 50);
@@ -33,7 +33,7 @@ void UIButton::apply_theme(bool bInvalidate) {
 }
 
 void UIButton::on_mouse_move(int x, int y, uint32_t param) {
-	if (!bEnabled) return;
+	if (!isEnabled) return;
 	isHover = handleArea.is_inside(x, y);
 	invalidate();
 }
@@ -45,7 +45,7 @@ void UIButton::on_mouse_down(int x, int y, uint32_t param) {
 }
 
 void UIButton::on_click(int x, int y, uint32_t param) {
-	if (!bEnabled) return;
+	if (!isEnabled) return;
 	if (parent) parent->process_event(this, Event::Click, 0, true);
 }
 
@@ -61,7 +61,7 @@ bool UIButton::select(bool bSelect) {
 void UIButton::on_mouse_up(int x, int y, uint32_t param) {
 	UILabel::on_mouse_up(x, y, param);
 
-	if (isPressed && bEnabled && handleArea.is_inside(x, y))
+	if (isPressed && isEnabled && handleArea.is_inside(x, y))
 		on_click(x, y, param);
 
 	isPressed = 0;

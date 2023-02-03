@@ -15,11 +15,11 @@ byte* OUI::blur_stack = NULL;
 
 OUI* OUI::find_element(OUI* curr, int x, int y)
 {
-	if (!curr || !curr->bVisible) return NULL;
+	if (!curr || !curr->isVisible) return NULL;
 	std::vector<OUI*>* elems = &curr->elements;
 	for (size_t i = 0, sz = elems->size(); i < sz; i++) {
 		OUI* elem = elems->at(i);
-		if (!elem || !elem->bVisible) continue;
+		if (!elem || !elem->isVisible) continue;
 		if (elem->area.is_inside(x, y)) {
 			return find_element(elem, x, y);
 		}
@@ -29,9 +29,9 @@ OUI* OUI::find_element(OUI* curr, int x, int y)
 		}
 	}
 
-	if (curr->scrollX && curr->scrollX->area.is_inside(x, y) && curr->scrollX->bVisible)
+	if (curr->scrollX && curr->scrollX->area.is_inside(x, y) && curr->scrollX->isVisible)
 		return (OUI*)curr->scrollX;
-	if (curr->scrollY && curr->scrollY->area.is_inside(x, y) && curr->scrollY->bVisible)
+	if (curr->scrollY && curr->scrollY->area.is_inside(x, y) && curr->scrollY->isVisible)
 		return (OUI*)curr->scrollY;
 
 	return curr;
@@ -60,17 +60,17 @@ OUI::OUI() {
 	menu = NULL;
 	parent = NULL;
 	godSheet = NULL;
-	bCreated = false;
-	bVisible = false;
-	bFocusable = false;
-	bActive = false;
-	bEnabled = true;
-	bSelected = false;
+	isCreated = false;
+	isVisible = false;
+	isFocusable = false;
+	isActive = false;
+	isEnabled = true;
+	isSelected = false;
 	isHover = false;
-	bMenu = false;
-	bDraggable = false;
+	isMenu = false;
+	isDraggable = false;
 	zIndex = 0;
-	bScrollable = false;
+	isScrollable = false;
 	scrollX = NULL;
 	scrollY = NULL;
 	opacity = 0xff;
@@ -114,7 +114,7 @@ void OUI::on_update() {
 	else {
 		Border& bor = border;
 		if (!border.is_empty()) {
-			//if (bActive) canvas.render(shape.ras, shape.sl, OUITheme::borderActive);
+			//if (isActive) canvas.render(shape.ras, shape.sl, OUITheme::borderActive);
 			canvas.render(shape.ras, shape.sl, border.leftColor);
 		}
 		canvas.render(contentShape.ras, contentShape.sl, backgroundColor, opacity);
@@ -314,12 +314,12 @@ void OUI::on_mouse_down(int x, int y, uint32_t param) {
 	x = TOABSX(x);
 	y = TOABSY(y);
 
-	if (bScrollable) {
-		if (scrollX->area.is_inside(x, y) && scrollX->bVisible) {
+	if (isScrollable) {
+		if (scrollX->area.is_inside(x, y) && scrollX->isVisible) {
 			scrollX->on_mouse_down(TORELX(x, scrollX->area), TORELY(y, scrollX->area), param);
 			return;
 		}
-		if (scrollY->area.is_inside(x, y) && scrollY->bVisible) {
+		if (scrollY->area.is_inside(x, y) && scrollY->isVisible) {
 			scrollY->on_mouse_down(TORELX(x, scrollY->area), TORELY(y, scrollY->area), param);
 			return;
 		}
@@ -337,12 +337,12 @@ void OUI::on_dbl_click(int x, int y, uint32_t param) {
 	x = TOABSX(x);
 	y = TOABSY(y);
 
-	if (bScrollable) {
-		if (scrollX->area.is_inside(x, y) && scrollX->bVisible) {
+	if (isScrollable) {
+		if (scrollX->area.is_inside(x, y) && scrollX->isVisible) {
 			scrollX->on_dbl_click(TORELX(x, scrollX->area), TORELY(y, scrollX->area), param);
 			return;
 		}
-		if (scrollY->area.is_inside(x, y) && scrollY->bVisible) {
+		if (scrollY->area.is_inside(x, y) && scrollY->isVisible) {
 			scrollY->on_dbl_click(TORELX(x, scrollY->area), TORELY(y, scrollY->area), param);
 			return;
 		}
@@ -357,12 +357,12 @@ void OUI::on_mouse_up(int x, int y, uint32_t param) {
 	x = TOABSX(x);
 	y = TOABSY(y);
 
-	if (bScrollable) {
-		if (scrollX->area.is_inside(x, y) && scrollX->bVisible) {
+	if (isScrollable) {
+		if (scrollX->area.is_inside(x, y) && scrollX->isVisible) {
 			scrollX->on_mouse_up(TORELX(x, scrollX->area), TORELY(y, scrollX->area), param);
 			return;
 		}
-		if (scrollY->area.is_inside(x, y) && scrollY->bVisible) {
+		if (scrollY->area.is_inside(x, y) && scrollY->isVisible) {
 			scrollY->on_mouse_up(TORELX(x, scrollY->area), TORELY(y, scrollY->area), param);
 			return;
 		}
@@ -377,10 +377,10 @@ void OUI::on_mouse_move(int x, int y, uint32_t param) {
 	x = TOABSX(x);
 	y = TOABSY(y);
 
-	if (bScrollable) {
-		if (scrollX->area.is_inside(x, y) && scrollX->bVisible)
+	if (isScrollable) {
+		if (scrollX->area.is_inside(x, y) && scrollX->isVisible)
 			scrollX->on_mouse_move(TORELX(x, scrollX->area), TORELY(y, scrollX->area), param);
-		if (scrollY->area.is_inside(x, y) && scrollY->bVisible)
+		if (scrollY->area.is_inside(x, y) && scrollY->isVisible)
 			scrollY->on_mouse_move(TORELX(x, scrollY->area), TORELY(y, scrollY->area), param);
 	}
 
@@ -391,11 +391,11 @@ bool OUI::on_mouse_wheel(int x, int y, int zDelta, uint32_t param) {
 	x = TOABSX(x);
 	y = TOABSY(y);
 
-	if (bScrollable) {
-		if (scrollX->bVisible && y > scrollX->area.top - 50)
+	if (isScrollable) {
+		if (scrollX->isVisible && y > scrollX->area.top - 50)
 			return scrollX->on_mouse_wheel(TORELX(x, scrollX->area), TORELY(y, scrollX->area), zDelta, param);
 
-		if (scrollY->bVisible) {
+		if (scrollY->isVisible) {
 			(zDelta > 0) ? scrollY->scroll_rel(-1) : scrollY->scroll_rel(+1);
 			return true;
 		}
@@ -407,7 +407,7 @@ bool OUI::on_mouse_wheel(int x, int y, int zDelta, uint32_t param) {
 void OUI::on_update_frame() {
 	if (uix == NULL) return;
 
-	if (bInvalidated) {
+	if (shouldInvalidate) {
 		uix->lock_screen(id);
 		on_update();
 	}
@@ -420,14 +420,14 @@ void OUI::on_update_frame() {
 		nextLayerId = -1;
 		for (auto* elem : elements) {
 			if (elem && SHEET_OVERLAP(elem->area, *godSheet)) {
-				if (elem->bVisible) {
+				if (elem->isVisible) {
 					if (elem->zIndex == currLayerId) {
-						elem->bInvalidated |= bInvalidated;
+						elem->shouldInvalidate |= shouldInvalidate;
 						elem->on_update_frame();
 
-						if (elem->bInvalidated) {
-							elem->bInvalidated = false;
-							if (bInvalidated == false)
+						if (elem->shouldInvalidate) {
+							elem->shouldInvalidate = false;
+							if (shouldInvalidate == false)
 								uix->update_section(&elem->area);
 						}
 					}
@@ -440,25 +440,25 @@ void OUI::on_update_frame() {
 			}
 		}
 
-		if (currLayerId == 0 && bScrollable) {
-			if (scrollX && scrollX->bVisible) {
-				scrollX->bInvalidated |= bInvalidated;
+		if (currLayerId == 0 && isScrollable) {
+			if (scrollX && scrollX->isVisible) {
+				scrollX->shouldInvalidate |= shouldInvalidate;
 				scrollX->on_update_frame();
 
-				if (scrollX->bInvalidated) {
-					scrollX->bInvalidated = false;
-					if (bInvalidated == false)
+				if (scrollX->shouldInvalidate) {
+					scrollX->shouldInvalidate = false;
+					if (shouldInvalidate == false)
 						uix->update_section(&scrollX->area);
 				}
 			}
 
-			if (scrollX && scrollY->bVisible) {
-				scrollY->bInvalidated |= bInvalidated;
+			if (scrollX && scrollY->isVisible) {
+				scrollY->shouldInvalidate |= shouldInvalidate;
 				scrollY->on_update_frame();
 
-				if (scrollY->bInvalidated) {
-					scrollY->bInvalidated = false;
-					if (bInvalidated == false)
+				if (scrollY->shouldInvalidate) {
+					scrollY->shouldInvalidate = false;
+					if (shouldInvalidate == false)
 						uix->update_section(&scrollY->area);
 				}
 			}
@@ -468,17 +468,17 @@ void OUI::on_update_frame() {
 	}
 	if (overflow != Overflow::visible) godSheet->unclip();
 
-	if (bInvalidated) {
+	if (shouldInvalidate) {
 		uix->unlock_screen(id);
 		uix->update_section(&area);
-		bInvalidated = false;
+		shouldInvalidate = false;
 	}
 }
 
 void OUI::on_update_frame_raw() {
 	if (uix == NULL) return;
 
-	if (bInvalidated) {
+	if (shouldInvalidate) {
 		uix->lock_screen(id);
 		canvas.clear_opaque(NULL, backgroundColor);
 		on_update();
@@ -490,15 +490,15 @@ void OUI::on_update_frame_raw() {
 		cont = false;
 		nextLayerId = -1;
 		for (auto* elem : elements) {
-			if (SHEET_OVERLAP(elem->area, *godSheet)) {
-				if (elem->bVisible) {
+			if (elem->isVisible) {
+				if (SHEET_OVERLAP(elem->area, *godSheet)) {
 					if (elem->zIndex == currLayerId) {
-						elem->bInvalidated |= bInvalidated;
+						elem->shouldInvalidate |= shouldInvalidate;
 						elem->on_update_frame();
 
-						if (elem->bInvalidated) {
-							elem->bInvalidated = false;
-							if (bInvalidated == false)
+						if (elem->shouldInvalidate) {
+							elem->shouldInvalidate = false;
+							if (shouldInvalidate == false)
 								uix->update_section(&elem->area);
 						}
 					}
@@ -511,25 +511,25 @@ void OUI::on_update_frame_raw() {
 			}
 		}
 
-		if (currLayerId == 0 && bScrollable) {
-			if (scrollX && scrollX->bVisible) {
-				scrollX->bInvalidated |= bInvalidated;
+		if (currLayerId == 0 && isScrollable) {
+			if (scrollX && scrollX->isVisible) {
+				scrollX->shouldInvalidate |= shouldInvalidate;
 				scrollX->on_update_frame();
 
-				if (scrollX->bInvalidated) {
-					scrollX->bInvalidated = false;
-					if (bInvalidated == false)
+				if (scrollX->shouldInvalidate) {
+					scrollX->shouldInvalidate = false;
+					if (shouldInvalidate == false)
 						uix->update_section(&scrollX->area);
 				}
 			}
 
-			if (scrollX && scrollY->bVisible) {
-				scrollY->bInvalidated |= bInvalidated;
+			if (scrollX && scrollY->isVisible) {
+				scrollY->shouldInvalidate |= shouldInvalidate;
 				scrollY->on_update_frame();
 
-				if (scrollY->bInvalidated) {
-					scrollY->bInvalidated = false;
-					if (bInvalidated == false)
+				if (scrollY->shouldInvalidate) {
+					scrollY->shouldInvalidate = false;
+					if (shouldInvalidate == false)
 						uix->update_section(&scrollY->area);
 				}
 			}
@@ -538,15 +538,15 @@ void OUI::on_update_frame_raw() {
 		currLayerId = nextLayerId;
 	}
 
-	if (bInvalidated) {
+	if (shouldInvalidate) {
 		uix->unlock_screen(id);
 		uix->update_section(&area);
-		bInvalidated = false;
+		shouldInvalidate = false;
 	}
 }
 
 OUI* OUI::get_draggable(int x, int y, uint32_t flags) {
-	return bDraggable && (parent ? parent->on_drag_start(this) : true) ? this : 0;
+	return isDraggable && (parent ? parent->on_drag_start(this) : true) ? this : 0;
 }
 
 void OUI::apply_theme(bool bInvalidate) {
@@ -562,7 +562,7 @@ OUI* OUI::create(int left, int top, int width, int height, OUI* parent, bool bAd
 	scrollX = new UIScroll();
 	scrollY = new UIScroll();
 	if (!scrollX || !scrollY) return this;
-	bVisible = true;
+	isVisible = true;
 
 	if (parent) {
 		if (bAddToParent) parent->add_element(this);
@@ -586,13 +586,13 @@ OUI* OUI::create(int left, int top, int width, int height, OUI* parent, bool bAd
 	scrollY->create(0, 0, 10, 10, this, false);
 	scrollY->mode = ScrollMode::Vertical;
 	scrollX->mode = ScrollMode::Horizontal;
-	
+
 	get_content_area(contentArea);
-	
-	if (bScrollable) {
-		if (scrollX && scrollX->bVisible)
+
+	if (isScrollable) {
+		if (scrollX && scrollX->isVisible)
 			scrollX->on_parent_resize();
-		if (scrollY && scrollY->bVisible)
+		if (scrollY && scrollY->isVisible)
 			scrollY->on_parent_resize();
 	}
 
@@ -600,7 +600,7 @@ OUI* OUI::create(int left, int top, int width, int height, OUI* parent, bool bAd
 	on_init();
 	on_resize(contentArea.width, contentArea.height);
 	calc_shape();
-	bCreated = true;
+	isCreated = true;
 	return this;
 }
 
@@ -639,10 +639,10 @@ void OUI::update_position() {
 		if (elem) elem->update_position();
 	}
 
-	if (bScrollable) {
-		if (scrollX && scrollX->bVisible)
+	if (isScrollable) {
+		if (scrollX && scrollX->isVisible)
 			scrollX->update_position();
-		if (scrollY && scrollY->bVisible)
+		if (scrollY && scrollY->isVisible)
 			scrollY->update_position();
 	}
 
@@ -681,10 +681,10 @@ void OUI::move(int left, int top, int width, int height) {
 	boxModel.height = height;
 	update_position();
 
-	if (bScrollable) {
-		if (scrollX && scrollX->bVisible)
+	if (isScrollable) {
+		if (scrollX && scrollX->isVisible)
 			scrollX->on_parent_resize();
-		if (scrollY && scrollY->bVisible)
+		if (scrollY && scrollY->isVisible)
 			scrollY->on_parent_resize();
 	}
 
@@ -701,10 +701,10 @@ void OUI::move_fast(int left, int top, int width, int height) {
 	boxModel.height = height;
 	update_position();
 
-	if (bScrollable) {
-		if (scrollX && scrollX->bVisible)
+	if (isScrollable) {
+		if (scrollX && scrollX->isVisible)
 			scrollX->on_parent_resize();
-		if (scrollY && scrollY->bVisible)
+		if (scrollY && scrollY->isVisible)
 			scrollY->on_parent_resize();
 	}
 
@@ -715,7 +715,7 @@ void OUI::move_fast(int left, int top, int width, int height) {
 }
 
 void OUI::process_event(OUI* element, uint32_t message, uint64_t param, bool bubbleUp) {
-	if (bScrollable) {
+	if (isScrollable) {
 		if (message == Event::Scroll && (element == scrollY || element == scrollX)) {
 			int dir = ((param) >> 16) & 0xffff;
 			int p = param & 0xffff;
@@ -728,7 +728,7 @@ void OUI::process_event(OUI* element, uint32_t message, uint64_t param, bool bub
 		}
 	}
 
-	if (bubbleUp && bVisible && parent)
+	if (bubbleUp && isVisible && parent)
 		parent->process_event(element, message, param, true);
 }
 
@@ -760,18 +760,18 @@ void OUI::fade() {
 }
 
 void OUI::show_window(bool bShow) {
-	bVisible = bShow;
+	isVisible = bShow;
 	invalidate();
 }
 
 void OUI::enable(bool bEnable) {
-	if (this->bEnabled == bEnable) return;
-	this->bEnabled = bEnable;
+	if (this->isEnabled == bEnable) return;
+	this->isEnabled = bEnable;
 	invalidate();
 }
 
 void push_back_elem(aoui& res, OUI* elem, bool nor, bool select, bool& bok) {
-	if (select) bok = elem->bSelected;
+	if (select) bok = elem->isSelected;
 	else bok = true;
 	if (!nor && bok) res.push_back(elem);
 }
@@ -803,8 +803,9 @@ inline bool OUI::check_transparency() {
 }
 
 void OUI::invalidate() {
-	if (bVisible) {
-		bInvalidated = true;
+	if (isVisible) {
+		uix->invalidate_child();
+		shouldInvalidate = true;
 		if (parent && check_transparency())
 			parent->invalidate();
 	}
@@ -819,15 +820,15 @@ uint32_t OUI::get_id() {
 }
 
 void OUI::focus() {
-	if (bFocusable) {
-		bActive = true;
+	if (isFocusable) {
+		isActive = true;
 		invalidate();
 	}
-	if (uix) uix->set_focused_element(bFocusable ? this : NULL);
+	if (uix) uix->set_focused_element(isFocusable ? this : NULL);
 }
 
 void OUI::blur() {
-	bActive = false;
+	isActive = false;
 	invalidate();
 }
 
@@ -876,10 +877,10 @@ void OUI::reset_size() {
 		if (elem) elem->on_parent_resize();
 	}
 
-	if (bScrollable) {
-		if (scrollX && scrollX->bVisible)
+	if (isScrollable) {
+		if (scrollX && scrollX->isVisible)
 			scrollX->on_parent_resize();
-		if (scrollY && scrollY->bVisible)
+		if (scrollY && scrollY->isVisible)
 			scrollY->on_parent_resize();
 	}
 
@@ -890,13 +891,13 @@ void OUI::reset_size() {
 }
 
 bool OUI::select(bool bSelect) {
-	bSelected = bSelect;
+	isSelected = bSelect;
 	invalidate();
 	/*if (parent) {
 		parent->reset_size();
 		parent->on_parent_resize();
 	}
-	if (!bSelected) process_event(this, Event::Deselect, 0, true);*/
+	if (!isSelected) process_event(this, Event::Deselect, 0, true);*/
 	return true;
 }
 
@@ -1022,11 +1023,11 @@ bool OUI::can_drop(OUI* child) {
 }
 
 bool OUI::focusable() {
-	return bFocusable && is_child_visible(this);
+	return isFocusable && is_child_visible(this);
 }
 
 bool OUI::is_child_visible(OUI* child) {
-	if (!parent || !bVisible) return bVisible;
+	if (!parent || !isVisible) return isVisible;
 	return parent->is_child_visible(this);
 }
 

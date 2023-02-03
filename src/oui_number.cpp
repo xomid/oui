@@ -71,7 +71,7 @@ void UINumber::on_resize(int width, int height) {
 
 void UINumber::on_key_down(uint32_t key, uint32_t nrep, uint32_t flags) {
 	UIText::on_key_down(key, nrep, flags);
-	if (!bActive || is_key_on(VK_CONTROL)) return;
+	if (!isActive || is_key_on(VK_CONTROL)) return;
 	switch (key) {
 	case VK_UP:
 		increase();
@@ -179,7 +179,7 @@ void UINumber::on_mouse_down(int x, int y, uint32_t flags) {
 	lastChange = clock();
 	lastDown = clock();
 	UIText::on_mouse_down(x, y, flags);
-	if (!bActive) focus();
+	if (!isActive) focus();
 	invalidate();
 }
 

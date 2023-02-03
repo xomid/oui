@@ -68,7 +68,7 @@ bool UIEditableLabel::pre_append(std::wstring str) {
 }
 
 bool UIEditableLabel::focusable() {
-	return bFocusable && is_editable();
+	return isFocusable && is_editable();
 }
 
 void UIEditableLabel::on_key_down(uint32_t key, uint32_t nrep, uint32_t flags) {

@@ -27,6 +27,7 @@ int WindowManager::run()
 			sz = windows.size();
 		}
 		pWindow->OnIdle();
+		Sleep(1);
 		if (++i >= sz) i = 0;
 	}
 

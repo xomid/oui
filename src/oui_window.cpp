@@ -43,14 +43,14 @@ OUI* UIWindow::create(int left, int top, int width, int height, OUI* caller, Win
 	borderRadius.set(brd, brd, brd, brd);
 	add_box_shadow(false, 0, 7, 12, 0, OUITheme::windowShadow);
 	svgApp = parse_svg(R"(<svg width="48" height="48"><path fill="#1976d2" d="M6 6h17v17H6V6zM25.042 22.958V6H42v16.958H25.042zM6 25h17v17H6V25zM25 42V25h17v17H25z"/></svg>)");
-	bDraggable = true;
+	isDraggable = true;
 	btnCloseHover = btnCloseDown = btnMaxHover = btnMaxDown = btnMinHover = btnMinDown = false;
 	uix = caller->uix;
 	parent = caller;
 	godSheet = caller->godSheet;
 	width = Max(width, 4 * icw);
 	OUI::create(left, top, width, height, NULL, false);
-	bVisible = false;
+	isVisible = false;
 	this->type = type;
 	this->caller = caller;
 	uix->add_window(this);
@@ -202,12 +202,12 @@ void UIWindow::show_window(bool show) {
 	if (!uix) return;
 	uix->show_window(this, show);
 	if (type == WindowType::Dialog) {
-		bVisible = uix->pop_up_dialog(this) ? show : false;
+		isVisible = uix->pop_up_dialog(this) ? show : false;
 	}
 }
 
 bool UIWindow::is_child_visible(OUI* child) {
-	return bVisible;//OUI::is_child_visible(child);
+	return isVisible;//OUI::is_child_visible(child);
 }
 
 void UIWindow::set_title(std::wstring newTitle) {

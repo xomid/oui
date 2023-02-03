@@ -19,6 +19,7 @@ void UIContainer::on_init()
 	
 	btnOpen.create(l, t, 100, 30, this);
 	btnOpen.set_text(L"Open...");
+	btnOpen.isDraggable = true;
 
 	/*dlg.create(w, h, this, DialogButtonSet::OK_Cancel);
 	dlg.set_default_button(DialogButtonId::OK);
