@@ -558,7 +558,6 @@ void UIX::OnLButtonUp(uint32_t nFlags, int x, int y)
 			currentElementHovering->on_drop(currentElementHovering);
 		}
 		lastDragHoverElement = NULL;
-		currentElementHovering = NULL;
 		capturedElement = NULL;
 	}
 	dragMan.stopDragging();
