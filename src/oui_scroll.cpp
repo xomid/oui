@@ -52,7 +52,7 @@ void UIScroll::on_update() {
 	}
 	UILabel::on_update();
 	backgroundColor.restore();
-	canvas.render(handle.ras, handle.sl, bPressed ? downBackColor : bHover ? hoverBackColor : backgroundColor);
+	canvas.render(handle.ras, handle.sl, isPressed ? downBackColor : isHover ? hoverBackColor : backgroundColor);
 }
 
 void UIScroll::calc_shape() {
@@ -87,7 +87,7 @@ void UIScroll::on_mouse_move(int x, int y, uint32_t param) {
 	//if (!bVisible) return;
 	UIButton::on_mouse_move(x, y, param);
 
-	if (bPressed) {
+	if (isPressed) {
 		int newPos;
 
 		newPos = 0;
@@ -151,7 +151,7 @@ int UIScroll::get_total() const {
 
 void UIScroll::on_mouse_down(int x, int y, uint32_t param) {
 	UIButton::on_mouse_down(x, y, param);
-	if (bPressed) {
+	if (isPressed) {
 		lastX = x;
 		lastY = y;
 		lastHandlePos = handlePos;

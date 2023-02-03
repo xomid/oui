@@ -13,8 +13,8 @@ void UICheck::gen_check_shape(Sheet& sheet, Color back, Color color, Color norma
 	auto w = sheet.w,
 		h = sheet.h;
 
-	if (bPressed && bHover) color = color.bright(-20);
-	else if (bHover) color = color.bright(20);
+	if (isPressed && isHover) color = color.bright(-20);
+	else if (isHover) color = color.bright(20);
 	
 	byte innerR = backgroundColor.r, innerG = backgroundColor.g, innerB = backgroundColor.b,
 		outerR = color.r, outerG = color.g, outerB = color.b,
@@ -24,11 +24,11 @@ void UICheck::gen_check_shape(Sheet& sheet, Color back, Color color, Color norma
 		innerR = color.r, innerG = color.g, innerB = color.b;
 	else {
 		color = normalColor;
-		if (bPressed && bHover) {
+		if (isPressed && isHover) {
 			color = normalColor.bright(-20);
 			checkColor = checkColor.bright(-20);
 		}
-		else if (bHover) {
+		else if (isHover) {
 			color = normalColor.bright(20);
 			checkColor = checkColor.bright(20);
 		}

@@ -149,20 +149,20 @@ void UIText::on_mouse_move(int x, int y, uint32_t flags) {
 			invalidate();
 		}
 	}
-	bHover = true;
+	isHover = true;
 	invalidate();
 }
 
 void UIText::on_mouse_enter(OUI* prev) {
 	UILabel::on_mouse_enter(prev);
-	bHover = true;
+	isHover = true;
 	//if (!bActive) border.set_color(Color("#868993"));
 	invalidate();
 }
 
 void UIText::on_mouse_leave(OUI* next) {
 	UILabel::on_mouse_leave(next);
-	bHover = false;
+	isHover = false;
 	//if (!bActive) border.set_color(Color("#6a6d78"));
 	invalidate();
 }
@@ -666,7 +666,7 @@ void UIText::on_update() {
 		m_path->m_colors = &colors;
 		canvas.render_svg(m_path, l, tt, rc.width, rc.height, opacity, &pad);
 	}
-	if (showClearIcon && len && bHover) {
+	if (showClearIcon && len && isHover) {
 		int closeHeight = Min(rc.height, fontSize);
 		auto ds = calc_scale(rc.width, closeHeight, closeIcon);
 

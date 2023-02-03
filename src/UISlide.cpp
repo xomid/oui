@@ -88,12 +88,12 @@ void UISlide::on_dbl_click(int x, int y, uint32_t flags) {
 
 void UISlide::on_mouse_down(int x, int y, uint32_t flags) {
 	set_capture(this);
-	bPressed = true;
+	isPressed = true;
 	on_mouse_move(x, y, flags);
 }
 
 void UISlide::on_mouse_move(int x, int y, uint32_t flags) {
-	if (bPressed) {
+	if (isPressed) {
 		double t = calc_value(chosenHandle, x, y, flags);
 		auto& resRange = get_range(chosenHandle);
 		resRange.value = t * (resRange.maxValue - resRange.minValue) + resRange.minValue;
@@ -110,7 +110,7 @@ void UISlide::on_mouse_move(int x, int y, uint32_t flags) {
 void UISlide::on_mouse_up(int x, int y, uint32_t flags) {
 	if (get_capture() == this)
 		release_capture();
-	bPressed = false;
+	isPressed = false;
 	invalidate();
 }
 
@@ -414,9 +414,9 @@ void UILinearSlide::on_update() {
 	cy = contentArea.top + rcHandle.height / 2.0 + rcHandle.top;
 
 	Color c = stroke;
-	if (bPressed && bHover)
+	if (isPressed && isHover)
 		c = c.bright(-20);
-	else if (bHover)
+	else if (isHover)
 		c = c.bright(20);
 
 	canvas.draw_circle(cx, cy, rad, strokeWidth, 2, back, c, fill);

@@ -66,7 +66,7 @@ OUI::OUI() {
 	bActive = false;
 	bEnabled = true;
 	bSelected = false;
-	bHover = false;
+	isHover = false;
 	bMenu = false;
 	bDraggable = false;
 	zIndex = 0;
@@ -900,14 +900,14 @@ bool OUI::select(bool bSelect) {
 	return true;
 }
 
-void OUI::hover(bool bHover) {
-	/*if (this->bHover && !bHover)
+void OUI::hover(bool isHover) {
+	/*if (this->isHover && !isHover)
 		this->on_mouse_leave(0);
-	else if (!this->bHover && bHover)
+	else if (!this->isHover && isHover)
 		this->on_mouse_enter(0);
 	else return;*/
 
-	this->bHover = bHover;
+	this->isHover = isHover;
 	invalidate();
 }
 

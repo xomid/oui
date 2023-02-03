@@ -29,7 +29,7 @@ public:
 	Sheet* godSheet;
 	int lockerID, transparenElementsSize, zIndex, fontSize;
 	bool bInvalidated, bVisible, bFocusable, bCreated,
-		bActive, bEnabled, bSelected, bHover, bMenu, bScrollable, bDraggable;
+		bActive, bEnabled, bSelected, isHover, bMenu, bScrollable, bDraggable;
 	byte opacity;
 	Color color, backgroundColor;
 	ShapeStorage shape, contentShape, absContentShape;

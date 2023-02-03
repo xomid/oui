@@ -3,7 +3,7 @@
 
 struct OUI_API UILightButton {
 	Rect rc;
-	bool bHover, bPressed;
+	bool isHover, isPressed;
 	Color color, hoverColor, downColor;
 	std::map<std::string, Color> colors;
 	agg::trans_affine mat;
@@ -11,13 +11,13 @@ struct OUI_API UILightButton {
 	double scale;
 
 	agg::svg::path_renderer* icon;
-	UILightButton() : bHover(false), bPressed(false), sw(0), sh(0), aw(0), ah(0), scale(1.0), icon(0)
+	UILightButton() : isHover(false), isPressed(false), sw(0), sh(0), aw(0), ah(0), scale(1.0), icon(0)
 	{}
 	void create(Rect rc, agg::svg::path_renderer* back, agg::svg::path_renderer* icon) {
 		this->icon = icon;
 		this->icon->m_colors = &colors;
 		this->rc.set(rc);
-		bHover = bPressed = false;
+		isHover = isPressed = false;
 		aw = rc.width;
 		ah = rc.height;
 		double x0, y0, x1, y1;
@@ -51,28 +51,28 @@ struct OUI_API UILightButton {
 		canvas.render_svg(icon, rc.left, rc.top, rc.width, rc.height, 0xff, 0, &mat);
 	}
 	UILightButton& on_mouse_move(int x, int y, size_t flags) {
-		bHover = icon && rc.is_inside(x, y);
+		isHover = icon && rc.is_inside(x, y);
 		adj_colors();
 		return *this;
 	}
 	bool on_mouse_down(int x, int y, size_t flags) {
-		bPressed = bHover;
+		isPressed = isHover;
 		adj_colors();
-		return bPressed;
+		return isPressed;
 	}
 	bool on_mouse_up(int x, int y, size_t flags) {
-		auto temp = bPressed && bHover;
-		bPressed = false;
+		auto temp = isPressed && isHover;
+		isPressed = false;
 		adj_colors();
 		return temp;
 	}
 	void on_dbl_click(int x, int y, size_t flags) {
-		bPressed = false;
+		isPressed = false;
 		adj_colors();
 	}
 	void adj_colors() {
-		if (bPressed && bHover) colors["currentColor"] = downColor;
-		else if (bHover) colors["currentColor"] = hoverColor;
+		if (isPressed && isHover) colors["currentColor"] = downColor;
+		else if (isHover) colors["currentColor"] = hoverColor;
 		else colors["currentColor"] = color;
 	}
 	int get_shape_width() {
@@ -99,9 +99,7 @@ enum class OUI_API ButtonType {
 class OUI_API UIButton : public UILabel
 {
 public:
-	//int aMax, aMin;
-	//float hf, df, stepf, cx, cy;
-	bool bPressed;
+	bool isPressed;
 	Rect handleArea;
 	Color downBackColor, hoverBackColor;
 

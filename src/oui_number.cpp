@@ -158,8 +158,8 @@ void UINumber::num_to_text() {
 }
 
 void UINumber::on_mouse_move(int x, int y, uint32_t flags) {
-	if (!btnIncrease.on_mouse_move(x, y, flags).bHover)
-		if (!btnDecrease.on_mouse_move(x, y, flags).bHover)
+	if (!btnIncrease.on_mouse_move(x, y, flags).isHover)
+		if (!btnDecrease.on_mouse_move(x, y, flags).isHover)
 			UIText::on_mouse_move(x, y, flags);
 	invalidate();
 }
@@ -167,11 +167,11 @@ void UINumber::on_mouse_move(int x, int y, uint32_t flags) {
 void UINumber::on_mouse_down(int x, int y, uint32_t flags) {
 	btnIncrease.on_mouse_down(x, y, flags);
 	btnDecrease.on_mouse_down(x, y, flags);
-	if (btnIncrease.bPressed) {
+	if (btnIncrease.isPressed) {
 		kill_timer(2);
 		set_timer(1, UINUMBER_CHANGE_TICK_ELAPSE);
 	}
-	else if (btnDecrease.bPressed) {
+	else if (btnDecrease.isPressed) {
 		kill_timer(1);
 		set_timer(2, UINUMBER_CHANGE_TICK_ELAPSE);
 	}
@@ -216,8 +216,8 @@ void UINumber::on_mouse_enter(OUI* prev) {
 
 void UINumber::on_mouse_leave(OUI* next) {
 	UIText::on_mouse_leave(next);
-	btnIncrease.bHover = false;
-	btnDecrease.bHover = false;
+	btnIncrease.isHover = false;
+	btnDecrease.isHover = false;
 	btnIncrease.adj_colors();
 	btnDecrease.adj_colors();
 	invalidate();

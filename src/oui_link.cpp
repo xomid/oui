@@ -2,12 +2,12 @@
 #include "oui_link.h"
 
 void UILink::on_update() {
-	if (!bPressed && !bHover) {
+	if (!isPressed && !isHover) {
 		colors["currentColor"] = color;
 		return UILabel::on_update();
 	}
 	color.save();
-	color.set(bPressed ? downColor : bHover ? hoverColor : color);
+	color.set(isPressed ? downColor : isHover ? hoverColor : color);
 	colors["currentColor"] = color;
 	UILabel::on_update();
 	color.restore();

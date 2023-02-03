@@ -20,8 +20,8 @@ void UIRadio::gen_circle_shape(Sheet& sheet, Color back, Color border, Color nor
 		outerWidth = 1.3;
 	}
 
-	if (bPressed && bHover) border = border.bright(-20);
-	else if (bHover) border = border.bright(20);
+	if (isPressed && isHover) border = border.bright(-20);
+	else if (isHover) border = border.bright(20);
 
 	byte innerR = back.r, innerG = back.g, innerB = back.b,
 		outerR = border.r, outerG = border.g, outerB = border.b,
@@ -145,9 +145,9 @@ void UIRadio::on_update() {
 	}
 	else {
 		auto c = backgroundColor;
-		if (bSelected || (bPressed && bHover))
+		if (bSelected || (isPressed && isHover))
 			backgroundColor.set(downBackColor);
-		else if (bHover)
+		else if (isHover)
 			backgroundColor.set(hoverBackColor);
 		UILabel::on_update();
 		backgroundColor = c;

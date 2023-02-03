@@ -40,7 +40,7 @@ void UIRangeSlide::on_update() {
 	cy = contentArea.top + rcHandle.height / 2.0 + rcHandle.top;
 	Color c = stroke;
 	bool hover = chosenHandle == &rcHandle;
-	if (bPressed && hover)
+	if (isPressed && hover)
 		c = c.bright(-20);
 	else if (hover)
 		c = c.bright(20);
@@ -50,7 +50,7 @@ void UIRangeSlide::on_update() {
 	cy = contentArea.top + rcHandle3.height / 2.0 + rcHandle3.top;
 	c = stroke;
 	hover = chosenHandle == &rcHandle3;
-	if (bPressed && hover)
+	if (isPressed && hover)
 		c = c.bright(-20);
 	else if (hover)
 		c = c.bright(20);
@@ -60,7 +60,7 @@ void UIRangeSlide::on_update() {
 	cy = contentArea.top + rcHandle2.height / 2.0 + rcHandle2.top;
 	c = stroke;
 	hover = chosenHandle == &rcHandle2;
-	if (bPressed && hover)
+	if (isPressed && hover)
 		c = c.bright(-20);
 	else if (hover)
 		c = c.bright(20);

@@ -228,11 +228,11 @@ void UIRadialSlide::on_update()
 
 	Color c = fill;
 	Color s = stroke;
-	if (bPressed && bHover) {
+	if (isPressed && isHover) {
 		c = c.bright(-5);
 		s = s.bright(-5);
 	}
-	else if (bHover) {
+	else if (isHover) {
 		c = c.bright(+5);
 		s = s.bright(+5);
 	}

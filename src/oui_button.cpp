@@ -1,7 +1,7 @@
 #include "oui_button.h"
 
 UIButton::UIButton() {
-	bPressed = bHover = 0;
+	isPressed = isHover = 0;
 	bFocusable = false;
 	borderRadius.set(4, 4, 4, 4);
 	enable();
@@ -18,9 +18,9 @@ void UIButton::on_update() {
 		color.restore();
 		return;
 	}
-	if (!bPressed && !bHover) return UILabel::on_update();
+	if (!isPressed && !isHover) return UILabel::on_update();
 	backgroundColor.save();
-	backgroundColor.set(bPressed && bHover ? downBackColor : bHover && !bPressed ? hoverBackColor : backgroundColor);
+	backgroundColor.set(isPressed && isHover ? downBackColor : isHover && !isPressed ? hoverBackColor : backgroundColor);
 	UILabel::on_update();
 	backgroundColor.restore();
 }
@@ -34,13 +34,13 @@ void UIButton::apply_theme(bool bInvalidate) {
 
 void UIButton::on_mouse_move(int x, int y, uint32_t param) {
 	if (!bEnabled) return;
-	bHover = handleArea.is_inside(x, y);
+	isHover = handleArea.is_inside(x, y);
 	invalidate();
 }
 
 void UIButton::on_mouse_down(int x, int y, uint32_t param) {
 	UILabel::on_mouse_down(x, y, param);
-	bPressed = bHover;
+	isPressed = isHover;
 	invalidate();
 }
 
@@ -61,10 +61,10 @@ bool UIButton::select(bool bSelect) {
 void UIButton::on_mouse_up(int x, int y, uint32_t param) {
 	UILabel::on_mouse_up(x, y, param);
 
-	if (bPressed && bEnabled && handleArea.is_inside(x, y))
+	if (isPressed && bEnabled && handleArea.is_inside(x, y))
 		on_click(x, y, param);
 
-	bPressed = 0;
+	isPressed = 0;
 	invalidate();
 }
 
