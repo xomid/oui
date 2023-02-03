@@ -6,41 +6,37 @@
 #include "UIDOpenFile.h"
 #include "UIDSaveFile.h"
 
+UIDialog dlg;
 UIStack list;
 UIButton btnOpen;
 
 void UIContainer::on_init()
 {
-	int l = 100,
+	int l = -30,
 		t = 100,
 		w = 340,
 		h = 200;
-
 	
-	btnOpen.create(l, t, 100, 30, this);
-	btnOpen.set_text(L"Open...");
+	btnOpen.create(l, t, 115, 40, this);
 	btnOpen.isDraggable = true;
+
+	set_background_color(Color(L"#ecf0f3"));
+	btnOpen.set_background_color(Color(L"#ecf0f3"));
+	btnOpen.borderRadius.set(20);
+	btnOpen.add_box_shadow(false, 7, 7, 10, 0, Color("#cbced1"));
+	btnOpen.add_box_shadow(false, -7, -7, 10, 0, Color("#fff"));
 
 	/*dlg.create(w, h, this, DialogButtonSet::OK_Cancel);
 	dlg.set_default_button(DialogButtonId::OK);
 	dlg.set_background_color(Color("#ddd"));
 	dlg.show_window();*/
 
-	//list.create(l, t, 260, 200, this);
-	////list.mode = UIStackMode::STACKVER;
-
-	//for (int i = 0; i < 20; ++i) {
-	//	auto button = new UIButton();
-	//	button->create(0, 0, 100, 40, &list);
-	//	button->set_text(L"button");
-	//}
-
-	//list.reset_size();
-
-	OUITheme::primary.set("#eee");
-	OUITheme::secondary.set("#ddd");
-	OUITheme::text.set("#444");
-	uix->apply_theme_all();
+	//OUITheme::primary.set("#eee");
+	//OUITheme::secondary.set("#ddd");
+	//OUITheme::text.set("#444");
+	//uix->apply_theme_all();
+	
+	uix->show_box_model();
 }
 
 

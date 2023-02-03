@@ -40,8 +40,8 @@ public:
 	BoxModel boxModel;
 	UIFloatType floatType;
 	Sheet outsetBoxShadowSheet, insetBoxShadowSheet;
-	std::vector<BoxShadow> outsetBoxShadows;
-	std::vector<BoxShadow> insetBoxShadows;
+	std::vector<BoxShadow*> outsetBoxShadows;
+	std::vector<BoxShadow*> insetBoxShadows;
 	MenuType menuType;
 	MenuActivationMode menuActivationMode;
 	std::map<std::string, std::string> values;

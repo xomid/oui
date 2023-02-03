@@ -406,76 +406,72 @@ void Canvas::clear(Rect* rect, const Color* color) {
 	ey = CLAMP2(cy + y, h);
 	sx = CLAMP2(x, w - 1);
 	sy = CLAMP2(y, h - 1);
-	px = ((red & 0xff) << 16) | ((grn & 0xff) << 8) | (blu & 0xff);
+	px = ((alpha & 0xff) << 24) | ((red & 0xff) << 16) | ((grn & 0xff) << 8) | (blu & 0xff);
 
-	/*for (y = sy; y < ey; y++) {
-		d = data + y * pitch + 3 * sx;
-		for (x = sx; x < ex; x++, d += 3) {
-			d[0] = blu;
-			d[1] = grn;
-			d[2] = red;
-		}
-	}*/
+	if (nbpp == OUI_BGR) {
+		for (y = sy; y < ey; y++) {
+			d = data + y * pitch + 3 * sx;
+			sheet->clip(sx, y, &count, &cla);
+			_cla = 0xff - cla;
 
-	/*for (y = sy; y < ey; y++) {
-		d = data + y * pitch + 3 * sx;
-		sheet->clip(sx, y, &count, &cla);
-		_cla = 0xff - cla;
+			for (x = sx; x < ex; ) {
+				if (count < 1) {
+					sheet->clip(x, &count, &cla);
+					if (count < 1) break;
+					_cla = 0xff - cla;
+				}
 
-		for (x = sx; x < ex; x++, d += 3, --count) {
-			if (count < 1) {
-				sheet->clip(x, &count, &cla);
-				_cla = 0xff - cla;
-			}
-
-			if (cla == 0) {
-				continue;
-			}
-			else if (cla == 0xff && alpha == 0xff) {
-				d[0] = blu;
-				d[1] = grn;
-				d[2] = red;
-			}
-			else {
-				a = DIV255(alpha * cla);
-				_a = 0xff - a;
-				d[0] = CLAMP255(DIV255(blu * a + (d[0] * _a)));
-				d[1] = CLAMP255(DIV255(grn * a + (d[1] * _a)));
-				d[2] = CLAMP255(DIV255(red * a + (d[2] * _a)));
-			}
-		}
-	}*/
-
-	for (y = sy; y < ey; y++) {
-		d = data + y * pitch + 3 * sx;
-		sheet->clip(sx, y, &count, &cla);
-		_cla = 0xff - cla;
-
-		for (x = sx; x < ex; ) {
-			if (count < 1) {
-				sheet->clip(x, &count, &cla);
-				if (count < 1) break;
-				_cla = 0xff - cla;
-			}
-
-			if (cla == 0) {
-				x += count, d += 3 * count;
-				count = 0;
-			}
-			else if (cla == 0xff && alpha == 0xff) {
-				for (; x < ex && count > 0; x++, d += 3, --count) {
-					d[0] = blu;
-					d[1] = grn;
-					d[2] = red;
+				if (cla == 0) {
+					x += count, d += 3 * count;
+					count = 0;
+				}
+				else if (cla == 0xff && alpha == 0xff) {
+					for (; x < ex && count > 0; x++, d += 3, --count) {
+						d[0] = blu;
+						d[1] = grn;
+						d[2] = red;
+					}
+				}
+				else {
+					a = DIV255(alpha * cla);
+					_a = 0xff - a;
+					for (; x < ex && count > 0; x++, d += 3, --count) {
+						d[0] = CLAMP255(DIV255(blu * a + (d[0] * _a)));
+						d[1] = CLAMP255(DIV255(grn * a + (d[1] * _a)));
+						d[2] = CLAMP255(DIV255(red * a + (d[2] * _a)));
+					}
 				}
 			}
-			else {
-				a = DIV255(alpha * cla);
-				_a = 0xff - a;
-				for (; x < ex && count > 0; x++, d += 3, --count) {
-					d[0] = CLAMP255(DIV255(blu * a + (d[0] * _a)));
-					d[1] = CLAMP255(DIV255(grn * a + (d[1] * _a)));
-					d[2] = CLAMP255(DIV255(red * a + (d[2] * _a)));
+		}
+	}
+	else if (nbpp == OUI_BGRA) {
+		for (y = sy; y < ey; y++) {
+			d = data + y * pitch + 4 * sx;
+			sheet->clip(sx, y, &count, &cla);
+			_cla = 0xff - cla;
+
+			for (x = sx; x < ex; ) {
+				if (count < 1) {
+					sheet->clip(x, &count, &cla);
+					if (count < 1) break;
+					_cla = 0xff - cla;
+				}
+
+				if (cla == 0) {
+					x += count, d += 4 * count;
+					count = 0;
+				}
+				else {
+					if (cla == 0xff && alpha == 0xff) a = 0xff;
+					else if (cla == 0xff) a = alpha;
+					else a = DIV255(alpha * cla);
+
+					for (; x < ex && count > 0; x++, d += 4, --count) {
+						d[0] = blu;
+						d[1] = grn;
+						d[2] = red;
+						d[3] = a;
+					}
 				}
 			}
 		}
@@ -2402,10 +2398,12 @@ void Canvas::bit_blt(Sheet& srcSheet, int dstx, int dsty, int width, int height,
 
 	if (dstx < 0) {
 		width += dstx;
+		srcx += -dstx;
 		dstx = 0;
 	}
 	if (dsty < 0) {
 		height += dsty;
+		srcy += -dsty;
 		dsty = 0;
 	}
 
@@ -2973,7 +2971,7 @@ void Canvas::draw_circle(double cx, double cy, double radius, double strokeWidth
 							a = DIV255(outerA * a);
 							ca = DIV255(innerA * ca);
 							resA = 0xff - DIV255((0xff - a) * (0xff - ca));
-							
+
 							if (resA == 0) {
 								d += 3;
 							}

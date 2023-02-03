@@ -182,29 +182,29 @@ void OUI::calc_shape() {
 		//insetBoxShadowSheet.clear_solid(cl);
 
 		iterateIRev(sz) {
-			BoxShadow& boxs = insetBoxShadows[i];
-			if (ocom::is_zeroi(boxs.offsetX) && ocom::is_zeroi(boxs.offsetY) && ocom::is_zeroi(boxs.blur) && ocom::is_zeroi(boxs.spread)) continue;
+			auto boxs = insetBoxShadows[i];
+			if (ocom::is_zeroi(boxs->offsetX) && ocom::is_zeroi(boxs->offsetY) && ocom::is_zeroi(boxs->blur) && ocom::is_zeroi(boxs->spread)) continue;
 
-			boxs.sheet.create(rc.width + 2 * boxs.blur, rc.height + 2 * boxs.blur, OUI_GRAY);
-			boxs.sheet.clear(0xff);
+			boxs->sheet.create(rc.width + 2 * boxs->blur, rc.height + 2 * boxs->blur, OUI_GRAY);
+			boxs->sheet.clear(0xff);
 
 			agg::trans_affine mtx;
 			trans_shape trans(contentShape, mtx);
-			mtx *= agg::trans_affine_scaling(fmax((area.width + 2 * boxs.spread) / double(area.width), 0),
-				fmax((area.height + 2 * boxs.spread) / double(area.height), 0));
-			mtx *= agg::trans_affine_translation(boxs.offsetX + boxs.blur, boxs.offsetY + boxs.blur);
+			mtx *= agg::trans_affine_scaling(fmax((area.width + 2 * boxs->spread) / double(area.width), 0),
+				fmax((area.height + 2 * boxs->spread) / double(area.height), 0));
+			mtx *= agg::trans_affine_translation(boxs->offsetX + boxs->blur, boxs->offsetY + boxs->blur);
 
-			Canvas can2(NULL, &boxs.sheet);
+			Canvas can2(NULL, &boxs->sheet);
 			can2.clear_solid(trans, transparent);
 
-			if (boxs.blur > 0) {
+			if (boxs->blur > 0) {
 				memset(blur_stack, 0, sizeof(blur_stack));
-				stackblurJobG(boxs.sheet.data, boxs.sheet.w, boxs.sheet.h, boxs.sheet.pitch, boxs.blur, 1, blur_stack);
-				stackblurJobG(boxs.sheet.data, boxs.sheet.w, boxs.sheet.h, boxs.sheet.pitch, boxs.blur, 2, blur_stack);
+				stackblurJobG(boxs->sheet.data, boxs->sheet.w, boxs->sheet.h, boxs->sheet.pitch, boxs->blur, 1, blur_stack);
+				stackblurJobG(boxs->sheet.data, boxs->sheet.w, boxs->sheet.h, boxs->sheet.pitch, boxs->blur, 2, blur_stack);
 			}
 
 			insetBoxShadowSheet.setclip(&contentShape, 0xff);
-			can.bit_blt(boxs.sheet, 0, 0, insetBoxShadowSheet.w, insetBoxShadowSheet.h, boxs.blur, boxs.blur, boxs.color);
+			can.bit_blt(boxs->sheet, 0, 0, insetBoxShadowSheet.w, insetBoxShadowSheet.h, boxs->blur, boxs->blur, boxs->color);
 			insetBoxShadowSheet.unclip();
 		}
 	}
@@ -215,23 +215,23 @@ void OUI::calc_shape() {
 		bool bfirst = true;
 
 		iterateI(sz) {
-			BoxShadow& boxs = outsetBoxShadows[i];
-			if (ocom::is_zeroi(boxs.offsetX) && ocom::is_zeroi(boxs.offsetY) && ocom::is_zeroi(boxs.blur) && ocom::is_zeroi(boxs.spread)) continue;
+			auto boxs = outsetBoxShadows[i];
+			if (ocom::is_zeroi(boxs->offsetX) && ocom::is_zeroi(boxs->offsetY) && ocom::is_zeroi(boxs->blur) && ocom::is_zeroi(boxs->spread)) continue;
 
 			if (bfirst) {
-				l = boxs.offsetX - boxs.spread - boxs.blur;
-				t = boxs.offsetY - boxs.spread - boxs.blur;
-				r = l + area.width + (boxs.spread + boxs.blur) * 2;
-				b = t + area.height + (boxs.spread + boxs.blur) * 2;
+				l = boxs->offsetX - boxs->spread - boxs->blur;
+				t = boxs->offsetY - boxs->spread - boxs->blur;
+				r = l + area.width + (boxs->spread + boxs->blur) * 2;
+				b = t + area.height + (boxs->spread + boxs->blur) * 2;
 				bfirst = false;
 			}
 			else {
-				int L = boxs.offsetX - boxs.spread - boxs.blur,
-					T = boxs.offsetY - boxs.spread - boxs.blur;
+				int L = boxs->offsetX - boxs->spread - boxs->blur,
+					T = boxs->offsetY - boxs->spread - boxs->blur;
 				l = min(l, L);
 				t = min(t, T);
-				r = max(r, L + area.width + (boxs.spread + boxs.blur) * 2);
-				b = max(b, T + area.height + (boxs.spread + boxs.blur) * 2);
+				r = max(r, L + area.width + (boxs->spread + boxs->blur) * 2);
+				b = max(b, T + area.height + (boxs->spread + boxs->blur) * 2);
 			}
 		}
 
@@ -247,39 +247,39 @@ void OUI::calc_shape() {
 
 		iterateIRev(sz) {
 
-			BoxShadow& boxs = outsetBoxShadows[i];
+			auto boxs = outsetBoxShadows[i];
 			Rect rc(area);
 
-			if (ocom::is_zeroi(boxs.offsetX) && ocom::is_zeroi(boxs.offsetY) && ocom::is_zeroi(boxs.blur) && ocom::is_zeroi(boxs.spread)) continue;
+			if (ocom::is_zeroi(boxs->offsetX) && ocom::is_zeroi(boxs->offsetY) && ocom::is_zeroi(boxs->blur) && ocom::is_zeroi(boxs->spread)) continue;
 
-			rc.left = (boxs.offsetX - boxs.spread - boxs.blur);
-			rc.top = (boxs.offsetY - boxs.spread - boxs.blur);
-			rc.width += 2 * (boxs.spread + boxs.blur);
-			rc.height += 2 * (boxs.spread + boxs.blur);
-			boxs.sheet.create(rc.width + 2, rc.height + 2, OUI_GRAY);
-			boxs.sheet.clear(0);
+			rc.left = (boxs->offsetX - boxs->spread - boxs->blur);
+			rc.top = (boxs->offsetY - boxs->spread - boxs->blur);
+			rc.width += 2 * (boxs->spread + boxs->blur);
+			rc.height += 2 * (boxs->spread + boxs->blur);
+			boxs->sheet.create(rc.width + 2, rc.height + 2, OUI_GRAY);
+			boxs->sheet.clear(0);
 
-			agg::rendering_buffer pixbuff(boxs.sheet.data, boxs.sheet.w, boxs.sheet.h, boxs.sheet.pitch);
+			agg::rendering_buffer pixbuff(boxs->sheet.data, boxs->sheet.w, boxs->sheet.h, boxs->sheet.pitch);
 			pixfmt_gray pf(pixbuff);
 			renderer_base_gray ren_base(pf);
 			renderer_scanline_gray ren(ren_base);
 			rasterizer_scanline ras;
 			scanline sl;
 
-			shape.spread(boxs.spread, boxs.spread, false);
+			shape.spread(boxs->spread, boxs->spread, false);
 			agg::trans_affine mtx;
-			mtx *= agg::trans_affine_translation((boxs.sheet.w - 2 - (area.width + 2 * boxs.spread)) / 2.0 + boxs.spread + 1,
-				(boxs.sheet.h - 2 - (area.height + 2 * boxs.spread)) / 2.0 + boxs.spread + 1);
+			mtx *= agg::trans_affine_translation((boxs->sheet.w - 2 - (area.width + 2 * boxs->spread)) / 2.0 + boxs->spread + 1,
+				(boxs->sheet.h - 2 - (area.height + 2 * boxs->spread)) / 2.0 + boxs->spread + 1);
 
 			shape.set_matrix(mtx);
 			ras.add_path(shape);
 			ren.color(agg::gray8(0xff, 0xff));
 			agg::render_scanlines(ras, sl, ren);
 
-			if (boxs.blur > 0) {
+			if (boxs->blur > 0) {
 				memset(blur_stack, 0, sizeof(blur_stack));
-				stackblurJobG(boxs.sheet.data, boxs.sheet.w, boxs.sheet.h, boxs.sheet.pitch, boxs.blur, 1, blur_stack);
-				stackblurJobG(boxs.sheet.data, boxs.sheet.w, boxs.sheet.h, boxs.sheet.pitch, boxs.blur, 2, blur_stack);
+				stackblurJobG(boxs->sheet.data, boxs->sheet.w, boxs->sheet.h, boxs->sheet.pitch, boxs->blur, 1, blur_stack);
+				stackblurJobG(boxs->sheet.data, boxs->sheet.w, boxs->sheet.h, boxs->sheet.pitch, boxs->blur, 2, blur_stack);
 			}
 
 			shape.spread(0, 0, false);
@@ -287,10 +287,13 @@ void OUI::calc_shape() {
 			mtx *= agg::trans_affine_translation(-l + 1, -t + 1);
 			shape.set_matrix(mtx);
 			outsetBoxShadowSheet.setclip(&shape, 0xff, true);
-			can.bit_blt(boxs.sheet,
+			can.bit_blt(boxs->sheet,
 				rc.left - l,
 				rc.top - t,
-				outsetBoxShadowSheet.w, outsetBoxShadowSheet.h, 0, 0, boxs.color);
+				outsetBoxShadowSheet.w, outsetBoxShadowSheet.h, 0, 0, boxs->color);
+			const Color c = Colors::red;
+			Rect rcc;
+			rcc.set(0, 0, outsetBoxShadowSheet.w, outsetBoxShadowSheet.h);
 			outsetBoxShadowSheet.unclip();
 			shape.remove_matrix();
 		}
@@ -964,23 +967,23 @@ void OUI::remove_border_radius() {
 }
 
 void OUI::add_box_shadow(bool inset, int offsetX, int offsetY, int blur, int spread, Color color) {
-	BoxShadow boxShadow;
-	boxShadow.inset = inset;
-	boxShadow.offsetX = offsetX;
-	boxShadow.offsetY = offsetY;
-	boxShadow.blur = blur;
-	boxShadow.spread = spread;
-	boxShadow.color = color;
+	BoxShadow* boxShadow = new BoxShadow();
+	boxShadow->inset = inset;
+	boxShadow->offsetX = offsetX;
+	boxShadow->offsetY = offsetY;
+	boxShadow->blur = blur;
+	boxShadow->spread = spread;
+	boxShadow->color = color;
 	inset ? insetBoxShadows.push_back(boxShadow) : outsetBoxShadows.push_back(boxShadow);
 	calc_shape();
 	invalidate();
 }
 
 void OUI::clear_box_shadow() {
-	for (auto& t : insetBoxShadows)
-		t.sheet.free();
-	for (auto& t : outsetBoxShadows)
-		t.sheet.free();
+	for (auto boxShadow : insetBoxShadows)
+		delete boxShadow;
+	for (auto boxShadow : outsetBoxShadows)
+		delete boxShadow;
 
 	insetBoxShadows.clear();
 	outsetBoxShadows.clear();
@@ -1084,11 +1087,11 @@ void OUI::delete_elements() {
 			if (uix) uix->remove_element(elem);
 		}
 	}
-	for (auto& bx : insetBoxShadows) {
-		bx.sheet.destroy();
+	for (auto bx : insetBoxShadows) {
+		bx->sheet.destroy();
 	}
-	for (auto& bx : outsetBoxShadows) {
-		bx.sheet.destroy();
+	for (auto bx : outsetBoxShadows) {
+		bx->sheet.destroy();
 	}
 
 	insetBoxShadows.clear();
