@@ -28,7 +28,8 @@ public:
 	std::wstring text, fontName;
 	Sheet* godSheet;
 	int lockerID, transparenElementsSize, zIndex, fontSize;
-	bool shouldInvalidate, isVisible, isFocusable, isCreated, isActive, isEnabled, isSelected, isHover, isMenu, isScrollable, isDraggable;
+	bool shouldInvalidate, isVisible, isFocusable, isCreated, isActive, isEnabled, isSelected, isHover, isPressed,
+		isMenu, isScrollable, isDraggable;
 	byte opacity;
 	Color color, backgroundColor;
 	ShapeStorage shape, contentShape, absContentShape;
@@ -106,6 +107,7 @@ public:
 	virtual void show_window(bool bShow = true);
 	virtual void enable(bool bEnable = true);
 	virtual void update_position();
+	virtual void release_press();
 
 	// no default behavior
 	virtual bool on_drag_start(OUI* child);

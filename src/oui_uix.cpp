@@ -145,11 +145,10 @@ UIX::UIX()
 	visibleWindows(0),
 	countBuffer(0),
 	dragZIndex(0),
-	bAsyncTimer(false),
-	bDrawBoxModel(false),
-	bDrawMagnifier(false),
-	terminate(false),
-	terminated(true),
+	shouldDrawBoxModel(false),
+	shouldDrawMagnifier(false),
+	shouldTerminate(false),
+	isTerminated(true),
 	shouldInvalidate(false),
 	shouldUpdate(false),
 	lastLButtonDownTime(0)
@@ -334,7 +333,7 @@ void UIX::kill_timer(OUI* element, uint32_t nTimer) {
 }
 
 void UIX::destroy() {
-	terminate = true;
+	shouldTerminate = true;
 	if (container) container->on_destroy();
 }
 
@@ -385,26 +384,13 @@ void UIX::OnPaint()
 	this->hdc = prevHDC;
 }
 
-void UIX::OnTimer(uint32_t nEventID) {
-	if (!bAsyncTimer) {
-		//for (auto& x : timers) {
-			//for (auto it : x.second) {
-				//timer& tm = *it.second;
-				//if (tm.id == nEventID)
-					//tm.element->on_timer(tm.nTimer);
-			//}
-		//}
-		//update();
-	}
-}
-
 void UIX::OnMouseMove(uint32_t nFlags, int x, int y)
 {
 	cursorPos.set(x, y);
 	if (!container) return;
 	bool locked = is_locked();
 
-	if (bDrawMagnifier) {
+	if (shouldDrawMagnifier) {
 		int l = x - (magnifier.boxModel.width >> 1);
 		int t = y - (magnifier.boxModel.height >> 1);
 		magnifier.move(l, t);
@@ -422,7 +408,7 @@ void UIX::OnMouseMove(uint32_t nFlags, int x, int y)
 	}
 
 	if (capturedElement) {
-		if (dragMan.mouseAction == MouseDragStatus::STRATED) {
+		if (dragMan.mouseAction == MouseDragStatus::STRATED && dragMan.is_moved(x, y)) {
 			int left = capturedElement->boxModel.left, top = capturedElement->boxModel.top;
 			dragMan.drag(x, y, left, top);
 			{
@@ -546,38 +532,6 @@ void UIX::OnLButtonDown(uint32_t nFlags, int x, int y)
 		capturedElement->on_mouse_down(TORELX(x, capturedElement->area), TORELY(y, capturedElement->area), nFlags);
 	}
 	else {
-		//OUI* currMenu = NULL, * currWindow = NULL;
-		//if (locked) {
-		//	if (currDialog->area.is_inside(x, y)) {
-		//		currWindow = OUI::find_element(currDialog, x, y);
-		//		if (currWindow)
-		//			currWindow->on_mouse_down(TORELX(x, currWindow->area), TORELY(y, currWindow->area), nFlags);
-		//	}
-		//}
-		//else
-		//{
-		//	for (auto it = menus.begin(); it != menus.end(); it++) {
-		//		UIMenu* menu = (UIMenu*)it->second;
-		//		if (menu->area.is_inside(x, y) && menu->isVisible) {
-		//			currMenu = menu;
-		//			break;
-		//		}
-		//	}
-
-		//	for (int i = (int)windows.size() - 1; i > -1; --i) {
-		//		auto* win = windows[i];
-		//		if (win->area.is_inside(x, y) && win->isVisible) {
-		//			currWindow = win;
-		//			break;
-		//		}
-		//	}
-
-		//	/*if (currMenu) currentElementHovering->on_mouse_down(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
-		//	else if (currWindow) currentElementHovering->on_mouse_down(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
-		//	else */
-
-		//}
-
 		if (currentElementHovering) currentElementHovering->on_mouse_down(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 	}
 
@@ -588,7 +542,8 @@ void UIX::OnLButtonUp(uint32_t nFlags, int x, int y)
 {
 	if (!container) return;
 	bool b = dragMan.mouseAction == MouseDragStatus::STRATED;
-	if (b && currentElementHovering) {
+	if (b && currentElementHovering && dragMan.is_moved(x, y)) {
+		currentElementHovering->release_press();
 		if (lastDragHoverElement != currentElementHovering->parent &&
 			lastDragHoverElement != container && lastDragHoverElement &&
 			lastDragHoverElement->can_drop(currentElementHovering)) {
@@ -614,38 +569,6 @@ void UIX::OnLButtonUp(uint32_t nFlags, int x, int y)
 		if (b) capturedElement = NULL;
 	}
 	else {
-		//OUI* currMenu = NULL, * currWindow = NULL;
-
-		//if (locked) {
-		//	if (currDialog->area.is_inside(x, y)) {
-		//		currWindow = OUI::find_element(currDialog, x, y);
-		//		if (currWindow && currentElementHovering)
-		//			currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
-		//	}
-		//}
-		//else
-		//{
-		//	for (auto it = menus.begin(); it != menus.end(); it++) {
-		//		UIMenu* menu = (UIMenu*)it->second;
-		//		if (menu->area.is_inside(x, y) && menu->isVisible) {
-		//			currMenu = menu;
-		//			break;
-		//		}
-		//	}
-
-		//	for (int i = (int)windows.size() - 1; i > -1; --i) {
-		//		auto* win = windows[i];
-		//		if (win->area.is_inside(x, y) && win->isVisible) {
-		//			currWindow = win;
-		//			break;
-		//		}
-		//	}
-
-		//	//if (currMenu) currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
-		//	//else if (currWindow) currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
-		//	//else 
-		//}
-
 		if (currentElementHovering) currentElementHovering->on_mouse_up(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 	}
 
@@ -701,9 +624,6 @@ void UIX::OnLButtonDblClk(uint32_t nFlags, int x, int y)
 				}
 			}
 
-			/*if (currMenu) currentElementHovering->on_dbl_click(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
-			else if (currWindow) currentElementHovering->on_dbl_click(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
-			else */
 			if (currentElementHovering) currentElementHovering->on_dbl_click(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags);
 		}
 	}
@@ -810,7 +730,7 @@ void UIX::update() {
 	if (visibleWindows < 0) throw;
 	bool drawWindows = visibleWindows > 0;
 	bool dragging = dragMan.mouseAction == MouseDragStatus::STRATED;
-	if (!shouldInvalidate && (bDrawBoxModel || bDrawMagnifier || drawMenus || drawWindows || dragging)) shouldInvalidate = true;
+	if (!shouldInvalidate && (shouldDrawBoxModel || shouldDrawMagnifier || drawMenus || drawWindows || dragging)) shouldInvalidate = true;
 	strbuffer = "";
 
 	if (shouldInvalidate)
@@ -851,7 +771,7 @@ void UIX::update() {
 		shouldInvalidate = false;
 	}
 
-	if (bDrawBoxModel && currentElementHovering && currentElementHovering != container) {
+	if (shouldDrawBoxModel && currentElementHovering && currentElementHovering != container) {
 		OUI* e = currentElementHovering;
 		Canvas can(&container->area, &sheet);
 		can.draw_box_model(&e->area,
@@ -889,7 +809,7 @@ void UIX::update() {
 		can.draw_text8((char*)s.c_str(), rc, &spans);
 	}
 
-	if (bDrawMagnifier) {
+	if (shouldDrawMagnifier) {
 		magnifier.shouldInvalidate = true;
 		magnifier.on_update();
 	}
@@ -902,19 +822,6 @@ void UIX::update() {
 	SetWindowTextA(hWnd, strbuffer.c_str());
 
 #ifdef DEBUG_UPDATEFRAME
-	/*e = clock() - b;
-	strbuffer = "";
-	if (watchList.size()) {
-		strbuffer = " [";
-		for (auto var : watchList) {
-			strbuffer += "'" + var->get_name() + "':" + var->get_value() + ", ";
-		}
-		strbuffer[strbuffer.length() - 1] = ']';
-	}
-	strbuffer = std::to_string(countBuffer) + " items, " + (shouldInvalidate ? "UIX(1)" : "UIX(0)") + strbuffer;
-	sprintf_s(ocom::buff, sizeof(ocom::buff), "%dms | ", e);
-	strbuffer = std::string(ocom::buff) + strbuffer;
-	SetWindowTextA(hWnd, strbuffer.c_str());*/
 #endif
 }
 
@@ -1340,16 +1247,16 @@ bool UIX::is_key_on(uint32_t key) {
 }
 
 void UIX::show_magnifier(bool show, int width, int height, double scale) {
-	bDrawMagnifier = show;
+	shouldDrawMagnifier = show;
 	magnifier.set_scale(scale);
 	auto pos = get_cursor_pos();
 	magnifier.move(pos.x, pos.y, width, height);
-	magnifier.show_window(bDrawMagnifier);
+	magnifier.show_window(shouldDrawMagnifier);
 }
 
 void UIX::show_box_model(bool show) {
-	if (show == bDrawBoxModel) return;
-	bDrawBoxModel = show;
+	if (show == shouldDrawBoxModel) return;
+	shouldDrawBoxModel = show;
 	shouldInvalidate = true;
 }
 

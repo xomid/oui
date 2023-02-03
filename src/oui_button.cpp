@@ -64,8 +64,7 @@ void UIButton::on_mouse_up(int x, int y, uint32_t param) {
 	if (isPressed && isEnabled && handleArea.is_inside(x, y))
 		on_click(x, y, param);
 
-	isPressed = 0;
-	invalidate();
+	release_press();
 }
 
 void UIButton::on_mouse_enter(OUI* prev) {

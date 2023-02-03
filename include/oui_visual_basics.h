@@ -23,6 +23,18 @@ struct vec {
 		z = defaultZ;
 		w = defaultW;
 	}
+	bool operator==(const vec& rhs) {
+		return lhs.x == rhs.x &&
+			lhs.y == rhs.y &&
+			lhs.z == rhs.z &&
+			lhs.w == rhs.w;
+	}
+	bool operator!= (const vec& rhs) {
+		return lhs.x != rhs.x ||
+			lhs.y != rhs.y ||
+			lhs.z != rhs.z ||
+			lhs.w != rhs.w;
+	}
 };
 typedef vec<int> veci;
 typedef vec<double> vecf;

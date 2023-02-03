@@ -8,7 +8,7 @@ int main() {
 	Rect rc(100, 100, 600, 500);
 	wmg.append(L"foo", new UIContainer(), &rc);
 	auto wnd = wmg.get(0);
-	wnd->show_box_model();
+	//wnd->show_box_model();
 	return wmg.run();
 }
 

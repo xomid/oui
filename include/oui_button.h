@@ -99,7 +99,6 @@ enum class OUI_API ButtonType {
 class OUI_API UIButton : public UILabel
 {
 public:
-	bool isPressed;
 	Rect handleArea;
 	Color downBackColor, hoverBackColor;
 

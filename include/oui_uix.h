@@ -65,7 +65,6 @@ public:
 
 	void PreLButtonDown(int x, int y, uint32_t param);
 	void OnIdle();
-	void OnTimer(uint32_t nEventID);
 	void OnPaint();
 	void OnMouseMove(uint32_t nFlags, int x, int y);
 	void OnLButtonDown(uint32_t nFlags, int x, int y);
@@ -108,7 +107,7 @@ private:
 	OUI* container, * currentElementHovering, * capturedElement, * lastDragHoverElement;
 	UIMagnifier magnifier;
 	Drag<int, int> dragMan;
-	bool shouldInvalidate, bDrawBoxModel, bDrawMagnifier, bAsyncTimer, terminate, terminated, shouldUpdate;
+	bool shouldInvalidate, shouldDrawBoxModel, shouldDrawMagnifier, shouldTerminate, isTerminated, shouldUpdate;
 	int id, lockerID, focusedElementID, visibleWindows, countBuffer, lXPos, lYPos, dragZIndex;
 	std::string strbuffer;
 	std::wstring title;

@@ -63,6 +63,10 @@ struct Drag {
 		elemPos.reset((T)0, (T)0);
 		mouseAction = MouseDragStatus::STOPPED;
 	}
+
+	bool is_moved(int x, int y) const {
+		return offset.x != x || offset.y != y;
+	}
 };
 
 

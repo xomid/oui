@@ -67,6 +67,7 @@ OUI::OUI() {
 	isEnabled = true;
 	isSelected = false;
 	isHover = false;
+	isPressed = false;
 	isMenu = false;
 	isDraggable = false;
 	zIndex = 0;
@@ -761,6 +762,11 @@ void OUI::fade() {
 
 void OUI::show_window(bool bShow) {
 	isVisible = bShow;
+	invalidate();
+}
+
+void OUI::release_press() {
+	isPressed = false;
 	invalidate();
 }
 
