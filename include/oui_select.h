@@ -19,7 +19,7 @@ class UISelect : public UIRadio
 {
 	std::wstring staticTitle;
 	OUI* selectedOption;
-	bool bStaticTitle;
+	bool haveStaticTitle;
 
 	enum class OptionState {
 		Availability, Visibility
@@ -29,7 +29,7 @@ class UISelect : public UIRadio
 
 protected:
 	void change_option_state(size_t index, bool bOn, OptionState optionState) {
-		bool bSelecteItemUnselectable = false;
+		bool isSelecteItemUnselectable = false;
 		OUI* prevSelOption = selectedOption;
 
 		auto sz = menu->elements.size();
@@ -44,31 +44,31 @@ protected:
 					e->show_window(bOn);
 			}
 
-			if (bSelecteItemUnselectable) {
+			if (isSelecteItemUnselectable) {
 				if (optionState == OptionState::Availability ?
-					e->bEnabled : e->bVisible)
+					e->isEnabled : e->isVisible)
 				{
 					selectedOption = e;
-					bSelecteItemUnselectable = false;
+					isSelecteItemUnselectable = false;
 					break;
 				}
 			}
 			if (e == selectedOption && !bOn) {
 				selectedOption = NULL;
-				bSelecteItemUnselectable = true;
+				isSelecteItemUnselectable = true;
 			}
 		}
 
-		if (bSelecteItemUnselectable) {
+		if (isSelecteItemUnselectable) {
 			for (size_t i = 0; i <= index; ++i) {
 				auto e = menu->elements[i];
 				if (ghostState[i]) continue;
 
 				if (optionState == OptionState::Availability ?
-					e->bEnabled : e->bVisible)
+					e->isEnabled : e->isVisible)
 				{
 					selectedOption = e;
-					bSelecteItemUnselectable = false;
+					isSelecteItemUnselectable = false;
 					break;
 				}
 			}
@@ -99,7 +99,7 @@ public:
 		auto sz = menu->elements.size();
 		for (size_t i = 0, visibleIndex = 0; i < sz; ++i) {
 			auto e = menu->elements[i];
-			if (e->bVisible && !ghostState[i]) {
+			if (e->isVisible && !ghostState[i]) {
 				if (e == selectedOption)
 					return (int)visibleIndex;
 				++visibleIndex;
@@ -121,14 +121,14 @@ public:
 		}
 	}
 
-	void set_title(std::wstring title, bool bStaticTitle = true) {
-		this->bStaticTitle = bStaticTitle;
+	void set_title(std::wstring title, bool haveStaticTitle = true) {
+		this->haveStaticTitle = haveStaticTitle;
 		staticTitle = title;
 		reset_title();
 	}
 
 	void reset_title() {
-		if (bStaticTitle) UIRadio::set_text(staticTitle + L": <Choose an option>");
+		if (haveStaticTitle) UIRadio::set_text(staticTitle + L": <Choose an option>");
 		else UIRadio::set_text(L": <Choose an option>");
 	}
 
@@ -147,7 +147,7 @@ public:
 		if (index >= sz) return;
 		for (size_t i = 0, visibleIndex = 0; i < sz; ++i) {
 			auto e = menu->elements[i];
-			if (e->bVisible && !ghostState[i]) {
+			if (e->isVisible && !ghostState[i]) {
 				if (visibleIndex++ == index) {
 					select_option_ptr(e);
 					break;
@@ -197,8 +197,8 @@ public:
 	}
 
 	void on_mouse_down(int x, int y, uint32_t param) override {
-		select(!menu->bVisible);
-		if (!menu->bVisible) {
+		select(!menu->isVisible);
+		if (!menu->isVisible) {
 			menu->move(-padding.left, area.height, boxModel.width, menu->boxModel.height);
 			menu->pop_up();
 			menu->invalidate();
@@ -214,11 +214,11 @@ public:
 
 	void process_event(OUI* element, uint32_t message, uint64_t param, bool bubbleUp) override {
 		if (message == Event::Deselect && element == menu) {
-			UIRadio::select(menu->bVisible);
+			UIRadio::select(menu->isVisible);
 		}
 
 		if (message == Event::Click && element != (OUI*)menu->scrollY && element != (OUI*)menu->scrollX) {
-			if (bStaticTitle) this->text = staticTitle + L": " + element->text;
+			if (haveStaticTitle) this->text = staticTitle + L": " + element->text;
 			else this->text = element->text;
 			selectedOption = element;
 			((UIMenu*)menu)->fade();
