@@ -6,17 +6,17 @@
 #include "UIDOpenFile.h"
 #include "UIDSaveFile.h"
 
-UIDialog dlg;
-UIStack list;
 UIButton btnOpen;
+UIDialog dlg;
 
 void UIContainer::on_init()
 {
 	int l = 100,
 		t = 100,
-		w = 340,
-		h = 200;
-	
+		w = 120,
+		h = 35,
+		margin = 20;
+
 	btnOpen.create(l, t, 115, 40, this);
 	btnOpen.isDraggable = true;
 	btnOpen.set_text(L"Open ...");
@@ -27,17 +27,16 @@ void UIContainer::on_init()
 	btnOpen.add_box_shadow(false, 7, 7, 10, 0, Color("#cbced1"));
 	btnOpen.add_box_shadow(false, -7, -7, 10, 0, Color("#fff"));
 
-	/*dlg.create(w, h, this, DialogButtonSet::OK_Cancel);
+	dlg.create(w, h, this, DialogButtonSet::OK_Cancel);
 	dlg.set_default_button(DialogButtonId::OK);
 	dlg.set_background_color(Color("#ddd"));
-	dlg.show_window();*/
+	dlg.show_window();
 
 	//OUITheme::primary.set("#eee");
 	//OUITheme::secondary.set("#ddd");
 	//OUITheme::text.set("#444");
 	//uix->apply_theme_all();
 }
-
 
 void UIContainer::process_event(OUI* element, uint32_t message, uint64_t param, bool bubbleUp) {
 	if (element == &btnOpen && message == Event::Click) {
