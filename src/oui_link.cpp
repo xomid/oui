@@ -1,21 +1,22 @@
 
 #include "oui_link.h"
 
+void UILink::on_init() {
+	UIButton::on_init();
+
+	set_background_color(OUITheme::primary);
+	set_color(Colors::blue);
+	hoverColor = Colors::aqua;
+	downColor = Colors::red;
+}
+
 void UILink::on_update() {
 	if (!isPressed && !isHover) {
 		colors["currentColor"] = color;
+		canvas.set_color(color);
 		return UILabel::on_update();
 	}
-	color.save();
-	color.set(isPressed ? downColor : isHover ? hoverColor : color);
-	colors["currentColor"] = color;
+	canvas.set_color(isPressed ? downColor : isHover ? hoverColor : color);
+	colors["currentColor"] = canvas.art.textColor;
 	UILabel::on_update();
-	color.restore();
 }
-
-void UILink::set_color(Color color) {
-	UIButton::set_color(color);
-	hoverColor.brightness(&color, +20);
-	downColor.brightness(&color, -20);
-}
-
