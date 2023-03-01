@@ -3,7 +3,7 @@
 
 typedef bool (*Compare)(void* const a, void* const b, void* param);
 
-class UITable : public UIStack
+class OUI_API UITable : public UIStack
 {
 public:
 	using UIStack::create;
