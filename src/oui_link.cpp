@@ -1,15 +1,6 @@
 
 #include "oui_link.h"
 
-void UILink::on_init() {
-	UIButton::on_init();
-
-	set_background_color(OUITheme::primary);
-	set_color(Colors::blue);
-	hoverColor = Colors::aqua;
-	downColor = Colors::red;
-}
-
 void UILink::on_update() {
 	if (!isPressed && !isHover) {
 		colors["currentColor"] = color;
