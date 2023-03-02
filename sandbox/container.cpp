@@ -27,10 +27,10 @@ void UIContainer::on_init()
 	btnOpen.add_box_shadow(false, 7, 7, 10, 0, Color("#cbced1"));
 	btnOpen.add_box_shadow(false, -7, -7, 10, 0, Color("#fff"));
 
-	dlg.create(w, h, this, DialogButtonSet::OK_Cancel);
+	/*dlg.create(w, h, this, DialogButtonSet::OK_Cancel);
 	dlg.set_default_button(DialogButtonId::OK);
 	dlg.set_background_color(Color("#ddd"));
-	dlg.show_window();
+	dlg.show_window();*/
 
 	//OUITheme::primary.set("#eee");
 	//OUITheme::secondary.set("#ddd");
