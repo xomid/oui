@@ -409,6 +409,9 @@ void UIX::OnMouseMove(uint32_t nFlags, int x, int y)
 
 	if (capturedElement) {
 		if (dragMan.mouseAction == MouseDragStatus::STRATED && dragMan.is_moved(x, y)) {
+			if (shouldInitiateDrag)
+				capturedElement->on_drag_start(capturedElement);
+
 			int left = capturedElement->boxModel.left, top = capturedElement->boxModel.top;
 			dragMan.drag(x, y, left, top);
 			{
@@ -522,6 +525,7 @@ void UIX::OnLButtonDown(uint32_t nFlags, int x, int y)
 	if (currentElementHovering &&
 		(dragElem = currentElementHovering->get_draggable(TORELX(x, currentElementHovering->area), TORELY(y, currentElementHovering->area), nFlags))) {
 		currentElementHovering = dragElem;
+		shouldInitiateDrag = true;
 		dragMan.startDragging(x, y, currentElementHovering->boxModel.left, currentElementHovering->boxModel.top);
 		capturedElement = currentElementHovering;
 		dragZIndex = currentElementHovering->zIndex;

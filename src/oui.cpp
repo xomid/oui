@@ -1016,7 +1016,7 @@ void OUI::on_drag_leave(OUI* element) {
 }
 
 bool OUI::on_drag_start(OUI* child) {
-	return true;
+	return parent ? parent->on_drag_start(child) : true;
 }
 
 void OUI::on_drag(OUI* child) {

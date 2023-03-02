@@ -107,7 +107,7 @@ private:
 	OUI* container, * currentElementHovering, * capturedElement, * lastDragHoverElement;
 	UIMagnifier magnifier;
 	Drag<int, int> dragMan;
-	bool shouldInvalidate, shouldDrawBoxModel, shouldDrawMagnifier, shouldTerminate, isTerminated, shouldUpdate;
+	bool shouldInvalidate, shouldDrawBoxModel, shouldDrawMagnifier, shouldTerminate, isTerminated, shouldUpdate, shouldInitiateDrag;
 	int id, lockerID, focusedElementID, visibleWindows, countBuffer, lXPos, lYPos, dragZIndex;
 	std::string strbuffer;
 	std::wstring title;
