@@ -257,8 +257,8 @@ namespace agg
 
     //------------------------------------------------------------------------
     // Tables for fast sqrt
-    AGG_API extern int16u g_sqrt_table[1024];
-    AGG_API extern int8   g_elder_bit_table[256];
+    extern int16u g_sqrt_table[1024];
+    extern int8   g_elder_bit_table[256];
 
 
     //---------------------------------------------------------------fast_sqrt
